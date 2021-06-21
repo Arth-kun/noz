@@ -28,7 +28,7 @@
       <Dropdown 
         id="askContract" 
         v-model="askContract" 
-        :options="askContractOptions"
+        :options="yesNoOptions"
       />
       <label for="askContract">Demande de contrat</label>
     </span>
@@ -44,42 +44,64 @@
       />
       <label for="beginDate">Date de début</label>
     </span>
-    <span class="p-float-label" v-if="beginDate !== '' && duration !== 0">
-      <Dropdown 
-        id="firstStore" 
-        v-model="firstStore" 
-        :options="formatedStoreList"
-        optionLabel="label"
-        optionValue="value"
-      />
-      <label for="firstStore">Magasin parrain</label>
-    </span>
+    <div class="first-store store" v-if="beginDate !== '' && duration !== 0">
+      <span class="store-title">
+        {{`Choix du ${secondStoreDuration > 0 ? 'premier' : ''} magasin parrain`}}
+      </span>
+      <span class="p-float-label">
+        <InputNumber
+          v-model="firstStoreDuration"
+          id="firstStoreDuration"
+          :max="duration"
+          :min="2"
+          suffix=" semaines"
+          showButtons 
+          buttonLayout="horizontal"
+          decrementButtonClass="p-button-secondary" 
+          incrementButtonClass="p-button-secondary" 
+          incrementButtonIcon="pi pi-plus" 
+          decrementButtonIcon="pi pi-minus"
+        />
+        <label for="firstStoreDuration">Nombre de semaine prévue dans ce magasin</label>
+      </span>
+      <span class="p-float-label">
+        <Dropdown 
+          id="firstStore" 
+          v-model="firstStore" 
+          :options="storeOptions.first"
+          optionLabel="label"
+          optionValue="value"
+        />
+        <label for="firstStore">Magasin parrain</label>
+      </span>
+    </div>
+    <div class="second-store store" v-if="secondStoreDuration > 0">
+      <span class="store-title">
+        Choix du deuxième magasin parrain :
+      </span>
+      <span class="p-float-label">
+        <InputNumber
+          disabled
+          v-model="secondStoreDuration"
+          id="secondStoreDuration"
+          :max="secondStoreDuration"
+          :min="secondStoreDuration"
+          suffix=" semaines"
+        />
+        <label for="secondStoreDuration">Nombre de semaine prévue dans ce magasin</label>
+      </span>
+      <span class="p-float-label">
+        <Dropdown 
+          id="firstStore" 
+          v-model="secondStore" 
+          :options="storeOptions.second"
+          optionLabel="label"
+          optionValue="value"
+        />
+        <label for="firstStore">Magasin parrain</label>
+      </span>
+    </div>
     <!--
-    <span class="p-float-label">
-      <InputText id="firstname" type="text" v-model.trim="firstname" />
-      <label for="firstname">Prénom</label>
-    </span>
-    <span class="p-float-label">
-      <Dropdown id="zone" v-model="zone" :options="zones" />
-      <label for="zone">Zone</label>
-    </span>
-    <span class="p-float-label">
-      <Dropdown id="xp" v-model="xp" :options="xps" />
-      <label for="xp">Expérience de plus de 2 ans chez Noz ?</label>
-    </span>
-    <span class="p-float-label">
-      <Dropdown id="contract" v-model="contract" :options="contracts" />
-      <label for="contract">Type de contrat actuel</label>
-    </span>
-    <span class="p-float-label">
-      <Dropdown id="society" v-model="society" :options="societies" />
-      <label for="society">Société d'appartenance</label>
-    </span>
-    <span class="p-float-label">
-      <Dropdown id="job" v-model="job" :options="jobs" />
-      <label for="job">Fonction actuelle</label>
-    </span>
-    <div>
       <Button 
         label="Suivant" 
         :disabled="!canSavePerson" 
@@ -94,7 +116,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapState } from 'vuex';
 import Header from '../components/Header.vue';
 
 function getWeekNumber( d ) { 
@@ -131,6 +153,10 @@ Date.prototype.addDays = function(days) {
   return date;
 }
 
+Date.prototype.isBetween = function(min, max) {
+  return this.getTime() >= min.getTime() && this.getTime() <= max.getTime();
+}
+
 export default {
   name: 'CreateFormation',
   components: {
@@ -138,21 +164,22 @@ export default {
   },
   data() {
     return {
-      formationTypes: [],
       jobs: [],
-      askContractOptions : ['Oui', 'Non'],
-      formatedStoreList: [],
+      yesNoOptions : ['Oui', 'Non'],
 
       formationType: '',
       targetJob: '',
       askContract: '',
       beginDate: '',
       firstStore: '',
+      secondStore: '',
+      firstStoreDuration: 0,
+      secondStoreDuration: 0,
 
       invalidDates: [new Date()],
       invalidDays: [0, 1, 3, 4, 5, 6],
-      startingRules: [],
       filteredRules: [],
+      storeOptions: { first: [], second: []},
       duration: 0
     }
   },
@@ -168,11 +195,90 @@ export default {
         }
       }
     },
-    ...mapActions('formation', ['getDurationRules', 'getStoreList'])
+    filterStore(storeIndex, formationBeginDate, formationDuration) {
+      console.log(storeIndex, formationBeginDate, formationDuration);
+
+      this.storeOptions[storeIndex] = this.storeList.filter(store => {
+        //console.log(store);
+
+        // Get formation Duration and end Date => Mettre dans une fonction
+        let amountOfDays = 0;
+        for (let index = 0; index < formationDuration; index++) {
+          if(index === 0 && formationDuration % 2) {
+            amountOfDays += 5;
+          } else if (index === 0) {
+            amountOfDays += 4;
+          } else {
+            amountOfDays += 7;
+          }
+        }
+        const formationEndDate = new Date().addDays(amountOfDays);
+
+        // ---------------------
+
+        // Check pour chaque début et fin d'absence ou de formation prévu si les dates sont dans l'interval ou non
+        // => Mettre dans une fonction
+        let isOut = false;
+        // Check indispo
+        if(store.fields['Date début indispo'] && store.fields['Date fin indispo']) {
+          // Check début indispo
+          store.fields['Date début indispo'].forEach(date => {
+            if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
+              isOut = true;
+            }
+          });
+          // Check fin indispo si pas déjà out
+          if(!isOut) {
+            store.fields['Date fin indispo'].forEach(date => {
+              console.log('date', date);
+              if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
+                isOut = true;
+              }
+              console.log('isOut', isOut);
+            });
+          }
+        }
+        
+        // ---------------------
+
+        // Check formation
+        if(store.fields['Date début semaines'] && store.fields['Date fin semaines'] && !isOut) {
+          // Check début semaines forma si pas déjà out
+          if(!isOut) {
+            store.fields['Date début semaines'].forEach(date => {
+              if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
+                isOut = true;
+              }
+            });
+          }
+          // Check fin semaines forma si pas déjà out
+          if(!isOut) {
+            store.fields['Date fin semaines'].forEach(date => {
+              console.log('date', date);
+              if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
+                isOut = true;
+              }
+              console.log('isOut', isOut);
+            });
+          }
+        }
+
+        // ---------------------
+
+        console.log(store, isOut);
+
+        return !isOut;
+
+      }).map(filteredStore => (
+        { value: filteredStore.id, label: filteredStore.fields["Nom du magasin"] }
+      ));
+
+      console.log(this.storeOptions[storeIndex]);
+    }
   },
   computed: {
     ...mapState('person', ['job', 'xp']),
-    ...mapState('formation', ['durationRules', 'storeList'])
+    ...mapState('formation', ['durationRules', 'storeList', 'formationTypes', 'startingRules', 'formatedStoreList'])
   },
   watch: {
     formationType(value) {
@@ -197,24 +303,35 @@ export default {
         this.duration = chosenRule.fields['Durée en semaine'];
       }
     },
+    beginDate(value) {
+      // Refiltrer les magasins et afficher uniquement les magasins qui correspondent
+      this.filterStore("first", value, this.firstStoreDuration);
+    },
+    duration(value) {
+      this.firstStoreDuration = value;
+    },
+    firstStoreDuration(value, pastValue) {
+      this.secondStoreDuration = this.duration - value;
+      // Si on a plus de semaine sur le premier magasin => On doit recheck si ce magasin est bien dispo, same pour le deuxième
+      if(pastValue > value) {
+        this.secondStore = '';
+      } else {
+        this.firstStore = '';
+      }
+      
+      if(this.beginDate) {
+        this.filterStore("first", this.beginDate, value);
+      }
+    }
   },
-  async beforeMount() {
+  beforeMount() {
     this.initInvalidDate();
-    await this.getDurationRules();
-    this.startingRules = this.durationRules.filter(rule => 
-      rule.fields['Poste actuel'] === this.job && 
-      (rule.fields['Ancienneté > 2 ans'] ? rule.fields['Ancienneté > 2 ans'] === this.xp : true)
-    );
-    const typePossibilities = this.startingRules.map(rule => rule.fields['Type de formation']);
-    this.formationTypes = typePossibilities.filter((type, index, self) => self.indexOf(type) === index);
+    this.storeOptions.first = this.formatedStoreList;
+    this.storeOptions.second = this.formatedStoreList;
 
     if(this.formationTypes.length === 1) {
       this.formationType = this.formationTypes[0];
     }
-    await this.getStoreList();
-    this.formatedStoreList = this.storeList.map(store => (
-      { label: store.fields["Nom du magasin"], value: store.id }
-    ));
   }
 }
 </script>
@@ -226,5 +343,13 @@ export default {
 }
 .duration {
   margin-bottom: 40px;
+}
+.store {
+  width: 20%;
+  margin-top: 30px;
+}
+.store-title {
+  display: block;
+  margin-bottom: 30px;
 }
 </style>

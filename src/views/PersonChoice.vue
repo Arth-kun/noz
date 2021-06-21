@@ -89,7 +89,8 @@ export default {
     }
   },
   methods: {
-    ...mapActions('person', ['createPerson'])
+    ...mapActions('person', ['createPerson']),
+    ...mapActions('formation', ['setFormatedStoreList', 'setDurationAndFormationTypes', 'getStoreList', 'getDurationRules']),
   },
   computed: {
     canSavePerson() {
@@ -106,14 +107,36 @@ export default {
     fullName() {
       return this.firstname + ' ' + this.lastname;
     },
-    ...mapState('person', ['status', 'recordId'])
+    ...mapState('person', ['status', 'recordId']),
+    ...mapState('formation', ['durationRules', 'storeList'])
   },
   watch: {
     status(value) {
       if(value === 'success') {
+        // Set duration rules for the next screen
+        const startingRules = this.durationRules.filter(rule => 
+          rule.fields['Poste actuel'] === this.job && 
+          (rule.fields['Ancienneté > 2 ans'] ? rule.fields['Ancienneté > 2 ans'] === this.xp : true)
+        );
+        const typePossibilities = startingRules.map(rule => rule.fields['Type de formation']);
+        const formationTypes = typePossibilities.filter((type, index, self) => self.indexOf(type) === index);
+
+        // Update vuex for the "CreateFormation" view
+        this.setDurationAndFormationTypes({ formationTypes, startingRules });
+
         this.$router.push({ name: 'CreateFormation' });
       }
     }
+  },
+  async beforeMount() {
+    await this.getStoreList();
+    const formatedStoreList = this.storeList.map(store => (
+      { label: store.fields["Nom du magasin"], value: store.id }
+    ));
+    // Update vuex for the "CreateFormation" view
+    this.setFormatedStoreList({ formatedStoreList });
+
+    await this.getDurationRules();
   }
 }
 </script>

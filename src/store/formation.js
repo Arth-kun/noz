@@ -10,15 +10,27 @@ export default {
   namespaced: true,
   state: {
     durationRules: [],
+    startingRules: [],
+    formationTypes: [],
     storeList: [],
+    formatedStoreList: [],
   },
   mutations: {
     SET_DURATION_RULES(state, payload) {
       return state.durationRules = payload.durationRules;
     },
+    SET_STARTING_RULES(state, payload) {
+      return state.startingRules = payload.startingRules;
+    },
+    SET_FORMATION_TYPES(state, payload) {
+      return state.formationTypes = payload.formationTypes;
+    },
     SET_STORE_LIST(state, payload) {
       return state.storeList = payload.storeList;
-    }
+    },
+    SET_FORMATED_STORE_LIST(state, payload) {
+      return state.formatedStoreList = payload.formatedStoreList;
+    },
   },
   actions: {
     getDurationRules(context) {
@@ -49,5 +61,16 @@ export default {
         }
       });
     },
+    setDurationAndFormationTypes(context, payload) {
+      if(payload) {
+        context.commit('SET_FORMATION_TYPES', payload);
+        context.commit('SET_STARTING_RULES', payload);
+      }
+    },
+    setFormatedStoreList(context, payload) {
+      if(payload) {
+        context.commit('SET_FORMATED_STORE_LIST', payload);
+      }
+    }
   },
 }
