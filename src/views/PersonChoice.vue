@@ -90,7 +90,7 @@ export default {
   },
   methods: {
     ...mapActions('person', ['createPerson']),
-    ...mapActions('formation', ['setFormatedStoreList', 'setDurationAndFormationTypes', 'getStoreList', 'getDurationRules']),
+    ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getDurationRules']),
   },
   computed: {
     canSavePerson() {
@@ -130,12 +130,6 @@ export default {
   },
   async beforeMount() {
     await this.getStoreList();
-    const formatedStoreList = this.storeList.map(store => (
-      { label: store.fields["Nom du magasin"], value: store.id }
-    ));
-    // Update vuex for the "CreateFormation" view
-    this.setFormatedStoreList({ formatedStoreList });
-
     await this.getDurationRules();
   }
 }
@@ -149,7 +143,7 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
-    padding-top: 100px;
+    padding: 100px 0;
   }
 
   .p-float-label {

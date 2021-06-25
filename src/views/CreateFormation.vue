@@ -74,6 +74,14 @@
         />
         <label for="firstStore">Magasin parrain</label>
       </span>
+      <span class="p-float-label">
+        <Dropdown 
+          id="firstNeedHotel" 
+          v-model="firstNeedHotel" 
+          :options="yesNoOptions"
+        />
+        <label for="firstNeedHotel">Besoin d'un hôtel ?</label>
+      </span>
     </div>
     <div class="second-store store" v-if="secondStoreDuration > 0">
       <span class="store-title">
@@ -100,23 +108,46 @@
         />
         <label for="firstStore">Magasin parrain</label>
       </span>
+      <span class="p-float-label">
+        <Dropdown 
+          id="secondNeedHotel" 
+          v-model="secondNeedHotel" 
+          :options="yesNoOptions"
+        />
+        <label for="secondNeedHotel">Besoin d'un hôtel ?</label>
+      </span>
     </div>
-    <!--
+    <div>
       <Button 
         label="Suivant" 
-        :disabled="!canSavePerson" 
-        @click="createPerson({ firstname, lastname, zone, society, job, xp })"
+        :disabled="!canSaveFormation" 
+        @click="createFormation({
+          recordId,
+          job,
+          formationType, 
+          targetJob, 
+          askContract, 
+          beginDate,
+          endDate,
+          firstStore, 
+          secondStore,
+          firstNeedHotel,
+          secondNeedHotel,
+          firstStoreDuration,
+          secondStoreDuration,
+          duration,
+        })"
       />
       <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
     </div>
     <div class="error" v-if="status === 'error'">
       Une erreur est survenue, merci de de remonter ce problème s'il persiste.
-    </div> -->
+    </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import Header from '../components/Header.vue';
 
 function getWeekNumber( d ) { 
@@ -171,8 +202,11 @@ export default {
       targetJob: '',
       askContract: '',
       beginDate: '',
+      endDate: '',
       firstStore: '',
       secondStore: '',
+      firstNeedHotel:'',
+      secondNeedHotel:'',
       firstStoreDuration: 0,
       secondStoreDuration: 0,
 
@@ -196,23 +230,22 @@ export default {
       }
     },
     filterStore(storeIndex, formationBeginDate, formationDuration) {
-      console.log(storeIndex, formationBeginDate, formationDuration);
+      //console.log(storeIndex, formationBeginDate, formationDuration);
 
       this.storeOptions[storeIndex] = this.storeList.filter(store => {
         //console.log(store);
 
         // Get formation Duration and end Date => Mettre dans une fonction
-        let amountOfDays = 0;
-        for (let index = 0; index < formationDuration; index++) {
-          if(index === 0 && formationDuration % 2) {
-            amountOfDays += 5;
-          } else if (index === 0) {
-            amountOfDays += 4;
-          } else {
-            amountOfDays += 7;
-          }
+        let amountOfDays = (formationDuration - 1) * 7;
+        if(formationDuration % 2) {
+          // Si la durée en semaine est impaire => fini un samedi
+          amountOfDays += 4;
+        } else {
+          // Si la durée en semaine est paire => fini un vendredi
+          amountOfDays += 3;
         }
-        const formationEndDate = new Date().addDays(amountOfDays);
+
+        const formationEndDate = formationBeginDate.addDays(amountOfDays);
 
         // ---------------------
 
@@ -234,7 +267,6 @@ export default {
               if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
                 isOut = true;
               }
-              console.log('isOut', isOut);
             });
           }
         }
@@ -258,14 +290,11 @@ export default {
               if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
                 isOut = true;
               }
-              console.log('isOut', isOut);
             });
           }
         }
 
         // ---------------------
-
-        console.log(store, isOut);
 
         return !isOut;
 
@@ -274,11 +303,29 @@ export default {
       ));
 
       console.log(this.storeOptions[storeIndex]);
-    }
+    },
+    ...mapActions('formation', ['createFormation'])
   },
   computed: {
-    ...mapState('person', ['job', 'xp']),
-    ...mapState('formation', ['durationRules', 'storeList', 'formationTypes', 'startingRules', 'formatedStoreList'])
+    canSaveFormation() {
+      return (
+        this.formationType.length > 0 &&
+        (this.formationType === 'Mercato' ? 
+          this.targetJob.length > 0 :
+          true
+        ) &&
+        this.askContract.length > 0 &&
+        this.beginDate !== '' &&
+        this.firstStore.length > 0 &&
+        this.firstNeedHotel.length > 0 &&
+        (this.firstStoreDuration !== this.duration ?
+          this.secondStore.length > 0 && this.secondNeedHotel.length > 0 :
+          true
+        )
+      );
+    },
+    ...mapState('person', ['job', 'xp', 'recordId']),
+    ...mapState('formation', ['durationRules', 'storeList', 'formationTypes', 'startingRules', 'status'])
   },
   watch: {
     formationType(value) {
@@ -304,6 +351,14 @@ export default {
       }
     },
     beginDate(value) {
+      let amountOfDays = this.duration * 7;
+      if(this.duration % 2) {
+        // Si la durée en semaine est impaire => on fini un samedi
+        amountOfDays -= 3;
+      } else {
+        amountOfDays -= 4;
+      }
+      this.endDate = value.addDays(amountOfDays);
       // Refiltrer les magasins et afficher uniquement les magasins qui correspondent
       this.filterStore("first", value, this.firstStoreDuration);
     },
@@ -318,16 +373,27 @@ export default {
       } else {
         this.firstStore = '';
       }
-      
+
       if(this.beginDate) {
         this.filterStore("first", this.beginDate, value);
       }
+    },
+    secondStoreDuration(value) {
+      let amountOfDays = this.firstStoreDuration * 7;
+      if(this.firstStoreDuration % 2) {
+        // Si la durée en semaine est impaire => recommence un lundi au lieu d'un mardi (-1 jour)
+        amountOfDays -= 1;
+      }
+
+      const secondStoreBeginDate = this.beginDate.addDays(amountOfDays);
+
+      this.filterStore("second", secondStoreBeginDate, value);
     }
   },
   beforeMount() {
     this.initInvalidDate();
-    this.storeOptions.first = this.formatedStoreList;
-    this.storeOptions.second = this.formatedStoreList;
+
+    console.log('RECORD ID', this.recordId);
 
     if(this.formationTypes.length === 1) {
       this.formationType = this.formationTypes[0];
