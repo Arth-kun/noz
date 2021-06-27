@@ -33,7 +33,7 @@
       <Button 
         label="Suivant" 
         :disabled="!canSavePerson" 
-        @click="createPerson({ firstname, lastname, zone, society, job, xp })"
+        @click="createPerson({ firstname, lastname, zone, society, job, xp, contract })"
       />
       <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
     </div>

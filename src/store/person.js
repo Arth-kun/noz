@@ -31,7 +31,7 @@ export default {
     },
     SAVE_XP(state, payload) {
       return state.xp = payload.xp;
-    }
+    },
   },
   actions: {
     createPerson(context, payload) {
@@ -63,6 +63,11 @@ export default {
         context.commit('SAVE_JOB', { job: payload.job });
         context.commit('SAVE_XP', { xp: payload.xp });
       });
+    },
+    resetState(context) {
+      context.commit('SAVE_PERSON_ID', { recordId: null });
+      context.commit('SAVE_JOB', { job: '' });
+      context.commit('SAVE_XP', { xp: '' });
     }
   },
 }

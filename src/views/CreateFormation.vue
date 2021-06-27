@@ -1,6 +1,6 @@
 <template>
   <Header />
-  <div class="layout">
+  <div class="layout" v-if="status !== 'success'">
     <span class="p-float-label">
       <Dropdown 
         id="formationType" 
@@ -119,7 +119,7 @@
     </div>
     <div>
       <Button 
-        label="Suivant" 
+        label="Envoyer" 
         :disabled="!canSaveFormation" 
         @click="createFormation({
           recordId,
@@ -143,6 +143,16 @@
     <div class="error" v-if="status === 'error'">
       Une erreur est survenue, merci de de remonter ce problème s'il persiste.
     </div>
+  </div>
+
+  <div class="layout" v-else>
+    <Message severity='success' :closable="false">
+      Vous avez créé une demande de formation avec succès !
+    </Message>
+    <Button 
+      label="Faire une nouvelle demande" 
+      @click="returnHome"
+    />
   </div>
 </template>
 
@@ -304,7 +314,12 @@ export default {
 
       console.log(this.storeOptions[storeIndex]);
     },
-    ...mapActions('formation', ['createFormation'])
+    async returnHome() {
+      await this.resetState();
+      this.$router.push({name: 'PersonChoice' });
+    },
+    ...mapActions('formation', ['createFormation']),
+    ...mapActions('person', ['resetState']),
   },
   computed: {
     canSaveFormation() {
