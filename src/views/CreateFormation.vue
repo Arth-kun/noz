@@ -25,14 +25,6 @@
       {{ `Durée de la formation : ${duration === 0 ? '?' : duration} semaines`}}
     </span>
     <span class="p-float-label">
-      <Dropdown 
-        id="askContract" 
-        v-model="askContract" 
-        :options="yesNoOptions"
-      />
-      <label for="askContract">Demande de contrat</label>
-    </span>
-    <span class="p-float-label">
       <Calendar 
         id="beginDate" 
         v-model="beginDate" 
@@ -126,7 +118,6 @@
           job,
           formationType, 
           targetJob, 
-          askContract, 
           beginDate,
           endDate,
           firstStore, 
@@ -140,9 +131,9 @@
       />
       <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
     </div>
-    <div class="error" v-if="status === 'error'">
+    <Message v-if="status === 'error'" severity='error' :closable="false">
       Une erreur est survenue, merci de de remonter ce problème s'il persiste.
-    </div>
+    </Message>
   </div>
 
   <div class="layout" v-else>
@@ -159,44 +150,7 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 import Header from '../components/Header.vue';
-
-function getWeekNumber( d ) { 
-
-  // Create a copy of this date object  
-  var target  = new Date(d.valueOf());  
-  
-  // ISO week date weeks start on monday  
-  // so correct the day number  
-  var dayNr   = (d.getDay() + 6) % 7;  
-
-  // Set the target to the thursday of this week so the  
-  // target date is in the right year  
-  target.setDate(target.getDate() - dayNr + 3);  
-
-  // ISO 8601 states that week 1 is the week  
-  // with january 4th in it  
-  var jan4    = new Date(target.getFullYear(), 0, 4);  
-
-  // Number of days between target date and january 4th  
-  var dayDiff = (target - jan4) / 86400000;    
-
-  // Calculate week number: Week 1 (january 4th) plus the    
-  // number of weeks between target date and january 4th    
-  var weekNr = 1 + Math.ceil(dayDiff / 7);    
-
-  return weekNr;    
-
-}
-
-Date.prototype.addDays = function(days) {
-  const date = new Date(this.valueOf());
-  date.setDate(date.getDate() + days);
-  return date;
-}
-
-Date.prototype.isBetween = function(min, max) {
-  return this.getTime() >= min.getTime() && this.getTime() <= max.getTime();
-}
+import { getWeekNumber } from '../utils.js';
 
 export default {
   name: 'CreateFormation',
@@ -210,7 +164,6 @@ export default {
 
       formationType: '',
       targetJob: '',
-      askContract: '',
       beginDate: '',
       endDate: '',
       firstStore: '',
@@ -265,19 +218,11 @@ export default {
         // Check indispo
         if(store.fields['Date début indispo'] && store.fields['Date fin indispo']) {
           // Check début indispo
-          store.fields['Date début indispo'].forEach(date => {
-            if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
-              isOut = true;
-            }
-          });
+          isOut = this.checkDatesMatches(store.fields['Date début indispo'], formationBeginDate, formationEndDate);
+
           // Check fin indispo si pas déjà out
           if(!isOut) {
-            store.fields['Date fin indispo'].forEach(date => {
-              console.log('date', date);
-              if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
-                isOut = true;
-              }
-            });
+            isOut = this.checkDatesMatches(store.fields['Date fin indispo'], formationBeginDate, formationEndDate);
           }
         }
         
@@ -287,22 +232,15 @@ export default {
         if(store.fields['Date début semaines'] && store.fields['Date fin semaines'] && !isOut) {
           // Check début semaines forma si pas déjà out
           if(!isOut) {
-            store.fields['Date début semaines'].forEach(date => {
-              if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
-                isOut = true;
-              }
-            });
+            isOut = this.checkDatesMatches(store.fields['Date début semaines'], formationBeginDate, formationEndDate);
           }
           // Check fin semaines forma si pas déjà out
           if(!isOut) {
-            store.fields['Date fin semaines'].forEach(date => {
-              console.log('date', date);
-              if(new Date(date).isBetween(formationBeginDate, formationEndDate)) {
-                isOut = true;
-              }
-            });
+            isOut = this.checkDatesMatches(store.fields['Date fin semaines'], formationBeginDate, formationEndDate);
           }
         }
+
+        console.log('JAUGE MAGASIN', store.fields['Jauge stagiaire']);
 
         // ---------------------
 
@@ -314,11 +252,32 @@ export default {
 
       console.log(this.storeOptions[storeIndex]);
     },
+    checkDatesMatches(datesArray, beginDate, endDate, maxCapacity = null) {
+      // Fonction pour vérifier si une date est dedans pour les dispos magasins
+      let cantBeChosen = false;
+
+      datesArray.forEach(date => {
+        if(new Date(date).isBetween(beginDate, endDate)) {
+
+          if(!maxCapacity) {
+            cantBeChosen = true;
+          } else {
+            // Check combien il y a de fois la même date de début dans le tableau
+            // Si c'est autant que le MaxCapacity => cantBeChosen passe à true
+            
+          }
+
+        }
+      });
+
+      return cantBeChosen;
+    },
     async returnHome() {
       await this.resetState();
+      await this.resetStatus();
       this.$router.push({name: 'PersonChoice' });
     },
-    ...mapActions('formation', ['createFormation']),
+    ...mapActions('formation', ['createFormation', 'resetStatus']),
     ...mapActions('person', ['resetState']),
   },
   computed: {
@@ -329,7 +288,6 @@ export default {
           this.targetJob.length > 0 :
           true
         ) &&
-        this.askContract.length > 0 &&
         this.beginDate !== '' &&
         this.firstStore.length > 0 &&
         this.firstNeedHotel.length > 0 &&

@@ -91,7 +91,6 @@ export default {
             "Durée de formation (semaines)": payload.duration,
             "Date début formation en magasin": begin,
             "Date fin formation": end,
-            "Demande de contrat": payload.askContract,
           }
         }
       ], (err, records) => {
@@ -176,6 +175,9 @@ export default {
 
         });
       });
+    },
+    resetStatus(context) {
+      context.commit('CHANGE_STATUS', { status: 'notsent' });
     }
   },
 }
