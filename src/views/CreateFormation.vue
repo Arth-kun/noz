@@ -232,15 +232,13 @@ export default {
         if(store.fields['Date début semaines'] && store.fields['Date fin semaines'] && !isOut) {
           // Check début semaines forma si pas déjà out
           if(!isOut) {
-            isOut = this.checkDatesMatches(store.fields['Date début semaines'], formationBeginDate, formationEndDate);
+            isOut = this.checkDatesMatches(store.fields['Date début semaines'], formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
           }
           // Check fin semaines forma si pas déjà out
           if(!isOut) {
-            isOut = this.checkDatesMatches(store.fields['Date fin semaines'], formationBeginDate, formationEndDate);
+            isOut = this.checkDatesMatches(store.fields['Date fin semaines'], formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
           }
         }
-
-        console.log('JAUGE MAGASIN', store.fields['Jauge stagiaire']);
 
         // ---------------------
 
@@ -264,7 +262,11 @@ export default {
           } else {
             // Check combien il y a de fois la même date de début dans le tableau
             // Si c'est autant que le MaxCapacity => cantBeChosen passe à true
-            
+            const duplicates = datesArray.filter(filterDate => filterDate === date);
+
+            if(duplicates.length >= maxCapacity) {
+              cantBeChosen = true;
+            }
           }
 
         }
