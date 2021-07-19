@@ -55,8 +55,12 @@
 </template>
 
 <script>
-import Header from '../components/Header.vue';
 import { mapActions, mapState } from 'vuex';
+
+import Header from '../components/Header.vue';
+import zones from '../datasets/zones.json';
+import jobs from '../datasets/jobs.json';
+import contracts from '../datasets/contracts.json';
 export default {
   name: 'PersonChoice',
   components: {
@@ -64,24 +68,16 @@ export default {
   },
   data() {
     return {
-      zones: [
-        '05 - Top Speak'
-      ],
+      zones: zones,
       xps: [
         'Oui',
         'Non'
       ],
-      contracts: [
-        'Gérant',
-      ],
+      contracts: contracts,
       societies: [
         'Laval 2',
       ],
-      jobs: [
-        'EMP',
-        'AEM',
-        'COMAG',
-      ],
+      jobs: jobs,
       lastname: '',
       firstname: '',
       zone: '',
