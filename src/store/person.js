@@ -9,6 +9,7 @@ const base = Airtable.base('appBja9jzHIz1c7VE');
 export default {
   namespaced: true,
   state: {
+    allStoreList: [],
     status: 'notsent',
     recordId: null,
     lastname: '',
@@ -32,8 +33,27 @@ export default {
     SAVE_XP(state, payload) {
       return state.xp = payload.xp;
     },
+    SET_STORE_LIST(state, payload) {
+      return state.allStoreList = payload.allStoreList;
+    },
   },
   actions: {
+    getAllStore(context) {
+      base('Magasins parrains').select({
+        view: "Tous les magasins"
+      }).eachPage((records) => {
+
+        const formatRecords = records.map(record => record.fields["Nom du magasin"]);
+        
+        context.commit('SET_STORE_LIST', { allStoreList: formatRecords });        
+
+      }, (err) => {
+        if (err) {
+          console.error(err);
+          return; 
+        }
+      });
+    },
     createPerson(context, payload) {
       context.commit('CHANGE_STATUS', { status: 'sending' });
       

@@ -22,7 +22,7 @@
       <label for="contract">Type de contrat actuel</label>
     </span>
     <span class="p-float-label">
-      <Dropdown id="society" v-model="society" :options="societies" />
+      <Dropdown id="society" v-model="society" :options="allStoreList" />
       <label for="society">Société d'appartenance</label>
     </span>
     <span class="p-float-label">
@@ -88,7 +88,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('person', ['createPerson']),
+    ...mapActions('person', ['createPerson', 'getAllStore']),
     ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getDurationRules']),
   },
   computed: {
@@ -106,7 +106,7 @@ export default {
     fullName() {
       return this.firstname + ' ' + this.lastname;
     },
-    ...mapState('person', ['status', 'recordId']),
+    ...mapState('person', ['status', 'recordId', 'allStoreList']),
     ...mapState('formation', ['durationRules', 'storeList'])
   },
   watch: {
@@ -128,6 +128,7 @@ export default {
     }
   },
   async beforeMount() {
+    await this.getAllStore();
     await this.getStoreList();
     await this.getDurationRules();
   }
