@@ -132,7 +132,8 @@
       <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
     </div>
     <Message v-if="status === 'error'" severity='error' :closable="false">
-      Une erreur est survenue, merci de de remonter ce problème s'il persiste.
+      Une erreur est survenue, merci de de remonter ce problème s'il persiste :
+      {{ error.message }}, code : {{error.statusCode}} / {{error.error}}
     </Message>
   </div>
 
@@ -300,7 +301,7 @@ export default {
       );
     },
     ...mapState('person', ['job', 'xp', 'recordId']),
-    ...mapState('formation', ['durationRules', 'storeList', 'formationTypes', 'startingRules', 'status'])
+    ...mapState('formation', ['durationRules', 'storeList', 'formationTypes', 'startingRules', 'status', 'error'])
   },
   watch: {
     formationType(value) {

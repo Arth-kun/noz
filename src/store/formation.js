@@ -18,6 +18,7 @@ export default {
   namespaced: true,
   state: {
     status: 'notsent',
+    error: '',
     durationRules: [],
     startingRules: [],
     formationTypes: [],
@@ -26,6 +27,9 @@ export default {
   mutations: {
     CHANGE_STATUS(state, payload) {
       return state.status = payload.status;
+    },
+    SET_ERROR_MESSAGE(state, payload) {
+      return state.error = payload.error;
     },
     SET_DURATION_RULES(state, payload) {
       return state.durationRules = payload.durationRules;
@@ -65,6 +69,8 @@ export default {
       }, (err) => {
         if (err) {
           console.error(err);
+          context.commit('CHANGE_STATUS', { status: 'error' });
+          context.commit('SET_ERROR_MESSAGE', { error: err });
           return; 
         }
       });
@@ -91,6 +97,7 @@ export default {
             "Durée de formation (semaines)": payload.duration,
             "Date début formation en magasin": begin,
             "Date fin formation": end,
+            "Status Orizon Formation " : 'Validé',
           }
         }
       ], (err, records) => {
@@ -98,6 +105,7 @@ export default {
         if (err) {
           console.error(err);
           context.commit('CHANGE_STATUS', { status: 'error' });
+          context.commit('SET_ERROR_MESSAGE', { error: err });
           return;
         }
 
@@ -166,6 +174,7 @@ export default {
           if (err) {
             console.error(err);
             context.commit('CHANGE_STATUS', { status: 'error' });
+            context.commit('SET_ERROR_MESSAGE', { error: err });
             return;
           }
 

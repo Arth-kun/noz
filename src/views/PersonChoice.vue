@@ -10,7 +10,13 @@
       <label for="firstname">Prénom</label>
     </span>
     <span class="p-float-label">
-      <Dropdown id="zone" v-model="zone" :options="zones" />
+      <Dropdown 
+        id="zone" 
+        v-model="zone" 
+        :options="zones"
+        optionLabel="label"
+        optionValue="value"
+      />
       <label for="zone">Zone</label>
     </span>
     <span class="p-float-label">
@@ -38,7 +44,8 @@
       <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
     </div>
     <Message v-if="status === 'error'" severity='error' :closable="false">
-      Une erreur est survenue, merci de de remonter ce problème s'il persiste.
+      Une erreur est survenue, merci de de remonter ce problème s'il persiste :
+      {{ error.message }} Code : {{error.statusCode}} / {{error.error}}
     </Message>
   </div>
 
@@ -58,7 +65,6 @@
 import { mapActions, mapState } from 'vuex';
 
 import Header from '../components/Header.vue';
-import zones from '../datasets/zones.json';
 import jobs from '../datasets/jobs.json';
 import contracts from '../datasets/contracts.json';
 export default {
@@ -68,7 +74,6 @@ export default {
   },
   data() {
     return {
-      zones: zones,
       xps: [
         'Oui',
         'Non'
@@ -88,7 +93,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('person', ['createPerson', 'getAllStore']),
+    ...mapActions('person', ['createPerson', 'getAllStore', 'getZones']),
     ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getDurationRules']),
   },
   computed: {
@@ -106,7 +111,7 @@ export default {
     fullName() {
       return this.firstname + ' ' + this.lastname;
     },
-    ...mapState('person', ['status', 'recordId', 'allStoreList']),
+    ...mapState('person', ['status', 'recordId', 'allStoreList', 'zones', 'error']),
     ...mapState('formation', ['durationRules', 'storeList'])
   },
   watch: {
@@ -129,6 +134,7 @@ export default {
   },
   async beforeMount() {
     await this.getAllStore();
+    await this.getZones();
     await this.getStoreList();
     await this.getDurationRules();
   }
