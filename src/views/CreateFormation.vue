@@ -233,11 +233,13 @@ export default {
         if(store.fields['Date début semaines'] && store.fields['Date fin semaines'] && !isOut) {
           // Check début semaines forma si pas déjà out
           if(!isOut) {
-            isOut = this.checkDatesMatches(store.fields['Date début semaines'], formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
+            const beginWeekDates = this.filterDateCanceled(store.fields["Status semaine formation"], store.fields['Date début semaines']);
+            isOut = this.checkDatesMatches(beginWeekDates, formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
           }
           // Check fin semaines forma si pas déjà out
           if(!isOut) {
-            isOut = this.checkDatesMatches(store.fields['Date fin semaines'], formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
+            const endWeekDates = this.filterDateCanceled(store.fields["Status semaine formation"], store.fields['Date fin semaines']);
+            isOut = this.checkDatesMatches(endWeekDates, formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
           }
         }
 
@@ -248,8 +250,12 @@ export default {
       }).map(filteredStore => (
         { value: filteredStore.id, label: filteredStore.fields["Nom du magasin"] }
       ));
+    },
+    filterDateCanceled(status, dates) {
+      // Return dates that doesn't have a "Désistement" status
+      const filteredDates = dates.filter((_, i) => status[i] !== "Désistement");
 
-      console.log(this.storeOptions[storeIndex]);
+      return filteredDates;
     },
     checkDatesMatches(datesArray, beginDate, endDate, maxCapacity = null) {
       // Fonction pour vérifier si une date est dedans pour les dispos magasins

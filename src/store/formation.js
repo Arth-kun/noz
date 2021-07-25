@@ -97,7 +97,7 @@ export default {
             "Durée de formation (semaines)": payload.duration,
             "Date début formation en magasin": begin,
             "Date fin formation": end,
-            "Status Orizon Formation " : 'Validé',
+            "Status Orizon Formation": 'Validé',
           }
         }
       ], (err, records) => {
