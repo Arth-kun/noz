@@ -39,7 +39,10 @@ export default {
       return state.xp = payload.xp;
     },
     SET_STORE_LIST(state, payload) {
-      return state.allStoreList = payload.allStoreList;
+      return state.allStoreList = [...state.allStoreList, ...payload.allStoreList];
+    },
+    RESET_STORE_LIST(state) {
+      return state.allStoreList = [];
     },
     SET_ZONE_LIST(state, payload) {
       return state.zones = payload.zones;
@@ -65,14 +68,19 @@ export default {
       });
     },
     getAllStore(context) {
+      // First reset just in case
+      context.commit('RESET_STORE_LIST');
+
       base('Magasins parrains').select({
+        maxRecords: 2000,
         view: "Tous les magasins"
-      }).eachPage((records) => {
+      }).eachPage((records, fetchNextPage) => {
 
         const formatRecords = records.map(record => record.fields["Nom du magasin"]);
 
-        context.commit('SET_STORE_LIST', { allStoreList: formatRecords });        
+        context.commit('SET_STORE_LIST', { allStoreList: formatRecords });
 
+        fetchNextPage();
       }, (err) => {
         if (err) {
           console.error(err);
