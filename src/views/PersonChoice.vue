@@ -28,7 +28,7 @@
       <label for="contract">Type de contrat actuel</label>
     </span>
     <span class="p-float-label">
-      <Dropdown id="society" v-model="society" :options="allStoreList" />
+      <Dropdown id="society" v-model="society" :options="societies" />
       <label for="society">Société d'appartenance</label>
     </span>
     <span class="p-float-label">
@@ -79,9 +79,6 @@ export default {
         'Non'
       ],
       contracts: contracts,
-      societies: [
-        'Laval 2',
-      ],
       jobs: jobs,
       lastname: '',
       firstname: '',
@@ -108,8 +105,8 @@ export default {
         this.job.length > 0
       );
     },
-    fullName() {
-      return this.firstname + ' ' + this.lastname;
+    societies() {
+      return [...this.allStoreList, ...this.zones.map(zone => zone.label)]
     },
     ...mapState('person', ['status', 'recordId', 'allStoreList', 'zones', 'error']),
     ...mapState('formation', ['durationRules', 'storeList'])
