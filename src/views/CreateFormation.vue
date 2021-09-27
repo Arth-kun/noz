@@ -319,12 +319,10 @@ export default {
       this.filteredRules = this.startingRules.filter(rule => 
         rule.fields['Type de formation'] === value
       );
-      if(this.filteredRules.length > 1) {
+      if(this.filteredRules.length > 0) {
         // Affichage uniquement des jobs possible restant
         this.jobs = this.filteredRules.map(rule => rule.fields['Poste visé']);
         this.targetJob = '';
-      } else if(this.filteredRules.length > 0) {
-        this.duration = this.filteredRules[0].fields['Durée en semaine'];
       }
     },
     targetJob(value) {
