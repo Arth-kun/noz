@@ -319,10 +319,15 @@ export default {
       this.filteredRules = this.startingRules.filter(rule => 
         rule.fields['Type de formation'] === value
       );
+      console.log(this.filteredRules);
       if(this.filteredRules.length > 0) {
         // Affichage uniquement des jobs possible restant
         this.jobs = this.filteredRules.map(rule => rule.fields['Poste visé']);
         this.targetJob = '';
+      } 
+      
+      if(this.filteredRules.length === 1) {
+        this.duration = this.filteredRules[0].fields['Durée en semaine'];
       }
     },
     targetJob(value) {
@@ -379,6 +384,7 @@ export default {
     this.initInvalidDate();
 
     console.log('RECORD ID', this.recordId);
+    console.log('RECORD job', this.job);
 
     if(this.formationTypes.length === 1) {
       this.formationType = this.formationTypes[0];
