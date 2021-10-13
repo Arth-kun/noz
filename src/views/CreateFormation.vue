@@ -25,7 +25,7 @@
       {{ `Durée de la formation : ${duration === 0 ? '?' : duration} semaines`}}
     </span>
     <span class="p-float-label">
-      <!-- <Calendar 
+      <Calendar 
         id="beginDate" 
         v-model="beginDate" 
         :disabledDates="invalidDates"
@@ -33,12 +33,12 @@
         :minDate="new Date()"
         dateFormat="dd/mm/yy"
         v-tooltip.focus="'Vous ne pouvez choisir que les mardi de semaines impaires'"
-      /> -->
-      <Calendar 
+      />
+      <!-- <Calendar 
         id="beginDate" 
         v-model="beginDate" 
         dateFormat="dd/mm/yy"
-      />
+      /> -->
       <label for="beginDate">Date de début</label>
     </span>
     <div class="first-store store" v-if="beginDate !== '' && duration !== 0">
