@@ -31,8 +31,8 @@
         :disabledDates="invalidDates"
         :disabledDays="invalidDays"
         :minDate="new Date()"
+        :disabled="duration === 0"
         dateFormat="dd/mm/yy"
-        v-tooltip.focus="'Vous ne pouvez choisir que les mardi de semaines impaires'"
       />
       <!-- <Calendar 
         id="beginDate" 
@@ -187,14 +187,20 @@ export default {
     }
   },
   methods: {
-    initInvalidDate() {
-      for (let index = 0; index < 182; index++) {
-        const date = new Date().addDays(index);
+    initInvalidDate(tuesdayRule = 'Impaire') {
+      this.invalidDates = [new Date()];
+      if(tuesdayRule === 'Impaire' || tuesdayRule === 'Paire') {
+        for (let index = 0; index < 1820; index++) {
+          const date = new Date().addDays(index);
 
-        const weekNumber = getWeekNumber(date) - 1;
-        
-        if(!(weekNumber % 2)) {
-          this.invalidDates.push(date);
+          const weekNumber = getWeekNumber(date) - 1;
+
+          // If the rule is odd then apply on not modulo of 2 else, it's modulo of 2
+          const condition = tuesdayRule === 'Impaire' ? !(weekNumber % 2) : weekNumber % 2;
+          
+          if(condition) {
+            this.invalidDates.push(date);
+          }
         }
       }
     },
@@ -312,7 +318,7 @@ export default {
       );
     },
     ...mapState('person', ['job', 'xp', 'recordId']),
-    ...mapState('formation', ['durationRules', 'storeList', 'formationTypes', 'startingRules', 'status', 'error'])
+    ...mapState('formation', ['storeList', 'formationTypes', 'startingRules', 'status', 'error'])
   },
   watch: {
     formationType(value) {
@@ -324,10 +330,17 @@ export default {
         // Affichage uniquement des jobs possible restant
         this.jobs = this.filteredRules.map(rule => rule.fields['Poste visé']);
         this.targetJob = '';
+        this.duration = 0;
       } 
       
       if(this.filteredRules.length === 1) {
+        // Seulement pour integration
         this.duration = this.filteredRules[0].fields['Durée en semaine'];
+
+        // Récupération de la règle des mardis (paire, impaire ou les deux)
+        // + Relance de l'init des jours
+        const tuesdayRule = this.filteredRules[0].fields['Mardi début de formation'];
+        this.initInvalidDate(tuesdayRule);
       }
     },
     targetJob(value) {
@@ -338,6 +351,11 @@ export default {
         );
 
         this.duration = chosenRule.fields['Durée en semaine'];
+
+        // Récupération de la règle des mardis (paire, impaire ou les deux)
+        // + Relance de l'init des jours
+        const tuesdayRule = chosenRule.fields['Mardi début de formation'];
+        this.initInvalidDate(tuesdayRule);
       }
     },
     beginDate(value) {
