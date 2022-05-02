@@ -50,17 +50,36 @@
           v-model="firstStoreDuration"
           id="firstStoreDuration"
           :max="duration"
-          :min="2"
+          :min="duration < 2 ? duration : 2"
           suffix=" semaines"
           showButtons 
           buttonLayout="horizontal"
-          decrementButtonClass="p-button-secondary" 
-          incrementButtonClass="p-button-secondary" 
+          decrementButtonClass="p-button-secondary"
+          incrementButtonClass="p-button-secondary"
           incrementButtonIcon="pi pi-plus" 
           decrementButtonIcon="pi pi-minus"
         />
-        <label for="firstStoreDuration">Nombre de semaine prévue dans ce magasin</label>
+        <label for="firstStoreDuration">Nombre de semaine prévue dans ce magasin {{isFormationInTwoPart ? 'pour la première session' : ''}}</label>
       </span>
+
+      <!-- Si on a la formation en deux fois : -->
+      <span class="p-float-label" v-if="isFormationInTwoPart">
+        <InputNumber
+          v-model="firstStoresecondDuration"
+          id="firstStoreDuration"
+          :max="secondDuration"
+          :min="secondDuration < 2 ? secondDuration : 2"
+          suffix=" semaines"
+          showButtons 
+          buttonLayout="horizontal"
+          decrementButtonClass="p-button-secondary"
+          incrementButtonClass="p-button-secondary"
+          incrementButtonIcon="pi pi-plus" 
+          decrementButtonIcon="pi pi-minus"
+        />
+        <label for="firstStoreDuration">Nombre de semaine prévue dans ce magasin pour la deuxième session</label>
+      </span>
+
       <span class="p-float-label">
         <Dropdown 
           id="firstStore" 
@@ -118,7 +137,7 @@
       <Button 
         label="Envoyer" 
         :disabled="!canSaveFormation" 
-        @click="createFormation({
+        @click="dispatchFormation({
           recordId,
           job,
           formationType, 
@@ -130,8 +149,11 @@
           firstNeedHotel,
           secondNeedHotel,
           firstStoreDuration,
+          isFormationInTwoPart,
+          firstStoresecondDuration,
           secondStoreDuration,
           duration,
+          secondDuration,
         })"
       />
       <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
@@ -177,13 +199,16 @@ export default {
       firstNeedHotel:'',
       secondNeedHotel:'',
       firstStoreDuration: 0,
+      firstStoresecondDuration: 0,
       secondStoreDuration: 0,
-
+      
+      isFormationInTwoPart: false,
       invalidDates: [new Date()],
       invalidDays: [0, 1, 3, 4, 5, 6],
       filteredRules: [],
       storeOptions: { first: [], second: []},
-      duration: 0
+      duration: 0,
+      secondDuration: 0,
     }
   },
   methods: {
@@ -297,7 +322,7 @@ export default {
       await this.resetStatus();
       this.$router.push({name: 'PersonChoice' });
     },
-    ...mapActions('formation', ['createFormation', 'resetStatus']),
+    ...mapActions('formation', ['dispatchFormation', 'resetStatus']),
     ...mapActions('person', ['resetState']),
   },
   computed: {
@@ -359,8 +384,10 @@ export default {
       }
     },
     beginDate(value) {
-      let amountOfDays = this.duration * 7;
-      if(this.duration % 2) {
+      // Spécificité dans le cas où la formation se fait en deux fois (il n'y a toujours qu'un mag sans ce cas)
+      const duration = this.isFormationInTwoPart ? this.firstStoreDuration + this.firstStoresecondDuration + 1 : this.duration;
+      let amountOfDays = duration * 7;
+      if(duration % 2) {
         // Si la durée en semaine est impaire => on fini un samedi
         amountOfDays -= 3;
       } else {
@@ -368,10 +395,13 @@ export default {
       }
       this.endDate = value.addDays(amountOfDays);
       // Refiltrer les magasins et afficher uniquement les magasins qui correspondent
-      this.filterStore("first", value, this.firstStoreDuration);
+      this.filterStore("first", value, this.isFormationInTwoPart ? this.firstStoreDuration + this.firstStoresecondDuration + 1 : this.firstStoreDuration);
     },
     duration(value) {
       this.firstStoreDuration = value;
+    },
+    secondDuration(value) {
+      this.firstStoresecondDuration = value;
     },
     firstStoreDuration(value, pastValue) {
       this.secondStoreDuration = this.duration - value;
@@ -383,7 +413,8 @@ export default {
       }
 
       if(this.beginDate) {
-        this.filterStore("first", this.beginDate, value);
+        const firstDuration = this.isFormationInTwoPart ? value + this.firstStoresecondDuration + 1 : value;
+        this.filterStore("first", this.beginDate, firstDuration);
       }
     },
     secondStoreDuration(value) {
@@ -403,6 +434,13 @@ export default {
 
     console.log('RECORD ID', this.recordId);
     console.log('RECORD job', this.job);
+
+    if(this.startingRules.length === 1) {
+      this.isFormationInTwoPart = this.startingRules[0].fields['Deux périodes séparées en magasins parrains'];
+      if(this.isFormationInTwoPart) {
+        this.secondDuration = this.startingRules[0].fields['Durée en semaine deuxième période'];
+      }
+    }
 
     if(this.formationTypes.length === 1) {
       this.formationType = this.formationTypes[0];

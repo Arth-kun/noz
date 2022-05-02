@@ -81,12 +81,56 @@ export default {
         context.commit('SET_STARTING_RULES', payload);
       }
     },
+    dispatchFormation(context, payload) {
+      const { endDate, beginDate, isFormationInTwoPart } = payload;
+
+      if (isFormationInTwoPart) {
+        const { duration, secondDuration } = payload;
+        let amountOfDays = duration * 7;
+
+        if(duration % 2) {
+          // Si la durée en semaine est impaire => on fini un samedi
+          amountOfDays -= 3;
+        } else {
+          amountOfDays -= 4;
+        }
+
+        const firstBeginDate = beginDate;
+        const firstEndDate = firstBeginDate.addDays(amountOfDays);
+
+        let amountOfDaysTwo = secondDuration * 7;
+        const totalDuration = duration + secondDuration + 1;
+
+        if(!(totalDuration % 2) && !(secondDuration % 2)) {
+          // even and even
+          amountOfDaysTwo -= 4;
+        } else if(totalDuration % 2 && secondDuration % 2) {
+          // odd and odd
+          amountOfDaysTwo -= 2;
+        } else {
+          // odd and even or even and odd
+          amountOfDaysTwo -= 3;
+        }
+
+        const secondEndDate = endDate;
+        const secondBeginDate = secondEndDate.addDays(-amountOfDaysTwo);
+
+        context.dispatch('createFormation', { ...payload, beginDate: firstBeginDate, endDate: firstEndDate });
+        context.dispatch('createFormation', { ...payload, beginDate: secondBeginDate, endDate: secondEndDate, duration: secondDuration });
+
+
+      } else {
+        context.dispatch('createFormation', payload);
+      }
+    },
     createFormation(context, payload) {
       context.commit('CHANGE_STATUS', { status: 'sending' });
       
       const { endDate, beginDate } = payload;
+
       const begin = formatDate(beginDate);
       const end = formatDate(endDate);
+
 
       base('Formations').create([
         {
