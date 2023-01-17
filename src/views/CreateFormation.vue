@@ -211,20 +211,41 @@ export default {
     }
   },
   methods: {
-    initInvalidDate(tuesdayRule = 'Impaire') {
-      this.invalidDates = [new Date()];
-      if(tuesdayRule === 'Impaire' || tuesdayRule === 'Paire') {
-        for (let index = 0; index < 1820; index++) {
-          const date = new Date().addDays(index);
+    // initInvalidDate(tuesdayRule = 'Impaire') {
+    //   this.invalidDates = [new Date()];
+    //   if(tuesdayRule === 'Impaire' || tuesdayRule === 'Paire') {
+    //     for (let index = 0; index < 1820; index++) {
+    //       const date = new Date().addDays(index);
 
-          const weekNumber = getWeekNumber(date) - 1;
+    //       const weekNumber = getWeekNumber(date) - 1;
 
-          // If the rule is odd then apply on not modulo of 2 else, it's modulo of 2
-          const condition = tuesdayRule === 'Impaire' ? !(weekNumber % 2) : weekNumber % 2;
+    //       // If the rule is odd then apply on not modulo of 2, else it's modulo of 2
+    //       const condition = tuesdayRule === 'Impaire' ? !(weekNumber % 2) : weekNumber % 2;
           
-          if(condition) {
-            this.invalidDates.push(date);
-          }
+    //       if(condition) {
+    //         this.invalidDates.push(date);
+    //       }
+    //     }
+    //   }
+    // },
+    initInvalidDate() {
+      // v2 for the update of 2023 jan
+      // Need to check on each day, is it a day that is in the database, 
+      // if not add it to the liste of invalidDates
+      this.invalidDates = [new Date()];
+
+      for (let index = 0; index < 1820; index++) {
+        const date = new Date().addDays(index);
+
+        const condition = this.formationDates.find(formationDate => (
+          new Date(formationDate).toDateString() === date.toDateString()
+        ));
+
+        getWeekNumber(date); // sert à rien mais c'est pour pas instancier le addDays dans ce fichier
+        // à voir si on peut pas le faire autrement
+
+        if(condition === undefined) {
+          this.invalidDates.push(date.addDays(1));
         }
       }
     },
@@ -342,7 +363,7 @@ export default {
       );
     },
     ...mapState('person', ['job', 'xp', 'recordId']),
-    ...mapState('formation', ['storeList', 'formationTypes', 'startingRules', 'status', 'error'])
+    ...mapState('formation', ['storeList', 'formationDates', 'formationTypes', 'startingRules', 'status', 'error'])
   },
   watch: {
     formationType(value) {

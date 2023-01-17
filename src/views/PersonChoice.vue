@@ -91,7 +91,7 @@ export default {
   },
   methods: {
     ...mapActions('person', ['createPerson', 'getAllStore', 'getZones']),
-    ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getDurationRules']),
+    ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getFormationDates', 'getDurationRules']),
   },
   computed: {
     canSavePerson() {
@@ -109,7 +109,7 @@ export default {
       return [...this.allStoreList, ...this.zones.map(zone => zone.label)]
     },
     ...mapState('person', ['status', 'recordId', 'allStoreList', 'zones', 'error']),
-    ...mapState('formation', ['durationRules', 'storeList'])
+    ...mapState('formation', ['durationRules', 'storeList', 'formationDates'])
   },
   watch: {
     status(value) {
@@ -127,14 +127,15 @@ export default {
 
         this.$router.push({ name: 'CreateFormation' });
       }
-    }
+    },    
   },
   async beforeMount() {
     await this.getAllStore();
     await this.getZones();
     await this.getStoreList();
+    await this.getFormationDates();
     await this.getDurationRules();
-  }
+  },
 }
 </script>
 

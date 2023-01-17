@@ -23,6 +23,7 @@ export default {
     startingRules: [],
     formationTypes: [],
     storeList: [],
+    formationDates : [],
   },
   mutations: {
     CHANGE_STATUS(state, payload) {
@@ -42,6 +43,9 @@ export default {
     },
     SET_STORE_LIST(state, payload) {
       return state.storeList = payload.storeList;
+    },
+    SET_FORMATION_DATES(state, payload) {
+      return state.formationDates = payload.formationDates;
     },
   },
   actions: {
@@ -65,6 +69,23 @@ export default {
       }).eachPage((records) => {
 
         context.commit('SET_STORE_LIST', { storeList: records });        
+
+      }, (err) => {
+        if (err) {
+          console.error(err);
+          context.commit('CHANGE_STATUS', { status: 'error' });
+          context.commit('SET_ERROR_MESSAGE', { error: err });
+          return; 
+        }
+      });
+    },
+    getFormationDates(context) {
+      base('Dates formations').select({
+        view: "Grid view"
+      }).eachPage((records) => {
+        
+        const formatRecords = records.map(record => (record.fields["Date"]));
+        context.commit('SET_FORMATION_DATES', { formationDates: formatRecords });        
 
       }, (err) => {
         if (err) {
