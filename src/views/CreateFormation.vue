@@ -5,8 +5,7 @@
       <Dropdown 
         id="formationType" 
         v-model="formationType" 
-        :options="formationTypes" 
-        :optionDisabled="formationTypes.length === 1"
+        :options="formationTypes"
       />
       <label for="formationType">Type de formation</label>
     </span>
