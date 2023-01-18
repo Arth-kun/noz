@@ -1,166 +1,172 @@
 <template>
   <Header />
   <div class="layout" v-if="status !== 'success'">
-    <span class="p-float-label">
-      <Dropdown 
-        id="formationType" 
-        v-model="formationType" 
-        :options="formationTypes"
-      />
-      <label for="formationType">Type de formation</label>
-    </span>
-    <span class="only-type" v-if="formationTypes.length === 1">
-      Vous ne pouvez choisir que le type "{{formationType}}"
-    </span>
-    <span class="p-float-label" v-if="formationType === 'Mercato'">
-      <Dropdown 
-        id="targetJob" 
-        v-model="targetJob" 
-        :options="jobs"
-      />
-      <label for="targetJob">Poste visé</label>
-    </span>
-    <span class="duration">
-      {{ `Durée de la formation : ${duration === 0 ? '?' : duration} semaines`}}
-    </span>
-    <span class="p-float-label">
-      <Calendar 
-        id="beginDate" 
-        v-model="beginDate" 
-        :disabledDates="invalidDates"
-        :disabledDays="invalidDays"
-        :minDate="new Date()"
-        :disabled="duration === 0"
-        dateFormat="dd/mm/yy"
-      />
-      <!-- <Calendar 
-        id="beginDate" 
-        v-model="beginDate" 
-        dateFormat="dd/mm/yy"
-      /> -->
-      <label for="beginDate">Date de début</label>
-    </span>
-    <div class="first-store store" v-if="beginDate !== '' && duration !== 0">
-      <span class="store-title">
-        {{`Choix du ${secondStoreDuration > 0 ? 'premier' : ''} magasin parrain`}}
-      </span>
-      <span class="p-float-label">
-        <InputNumber
-          v-model="firstStoreDuration"
-          id="firstStoreDuration"
-          :max="duration"
-          :min="duration < 2 ? duration : 2"
-          suffix=" semaines"
-          showButtons 
-          buttonLayout="horizontal"
-          decrementButtonClass="p-button-secondary"
-          incrementButtonClass="p-button-secondary"
-          incrementButtonIcon="pi pi-plus" 
-          decrementButtonIcon="pi pi-minus"
+    <div class="col">
+      <div class="formation-type-container">
+        <span class="p-float-label no-margin-bottom">
+          <Dropdown 
+            id="formationType" 
+            v-model="formationType" 
+            :options="formationTypes"
+          />
+          <label for="formationType">Type de formation</label>
+        </span>
+        <div class="only-type" v-if="formationTypes.length === 1">
+          <i class="pi pi-exclamation-triangle" style="margin-right: 5px;"></i>
+          <span>Vous ne pouvez choisir que le type "{{formationType}}"</span>
+        </div>
+      </div>
+      <span class="p-float-label" v-if="formationType === 'Mercato'">
+        <Dropdown 
+          id="targetJob" 
+          v-model="targetJob" 
+          :options="jobs"
         />
-        <label for="firstStoreDuration">Nombre de semaine prévue dans ce magasin {{isFormationInTwoPart ? 'pour la première session' : ''}}</label>
+        <label for="targetJob">Poste visé</label>
       </span>
+      <div class="duration">
+        {{ `Durée de la formation : ${duration === 0 ? '?' : duration} semaines`}}
+      </div>
+      <span class="p-float-label">
+        <Calendar 
+          id="beginDate" 
+          v-model="beginDate" 
+          :disabledDates="invalidDates"
+          :disabledDays="invalidDays"
+          :minDate="new Date()"
+          :disabled="duration === 0"
+          dateFormat="dd/mm/yy"
+        />
+        <!-- <Calendar 
+          id="beginDate" 
+          v-model="beginDate" 
+          dateFormat="dd/mm/yy"
+        /> -->
+        <label for="beginDate">Date de début</label>
+      </span>
+      <div class="first-store card" v-if="beginDate !== '' && duration !== 0">
+        <span class="store-title">
+          {{`Choix du ${secondStoreDuration > 0 ? 'premier' : ''} magasin parrain :`}}
+        </span>
+        <div class="p-float-label">
+          <InputNumber
+            v-model="firstStoreDuration"
+            id="firstStoreDuration"
+            :max="duration"
+            :min="duration < 2 ? duration : 2"
+            suffix=" semaines"
+            showButtons 
+            buttonLayout="horizontal"
+            decrementButtonClass="p-button-secondary"
+            incrementButtonClass="p-button-secondary"
+            incrementButtonIcon="pi pi-plus" 
+            decrementButtonIcon="pi pi-minus"
+          />
+          <label for="firstStoreDuration">Nombre de semaines prévues dans ce magasin {{isFormationInTwoPart ? 'pour la première session' : ''}}</label>
+        </div>
 
-      <!-- Si on a la formation en deux fois : -->
-      <span class="p-float-label" v-if="isFormationInTwoPart">
-        <InputNumber
-          v-model="firstStoresecondDuration"
-          id="firstStoreDuration"
-          :max="secondDuration"
-          :min="secondDuration < 2 ? secondDuration : 2"
-          suffix=" semaines"
-          showButtons 
-          buttonLayout="horizontal"
-          decrementButtonClass="p-button-secondary"
-          incrementButtonClass="p-button-secondary"
-          incrementButtonIcon="pi pi-plus" 
-          decrementButtonIcon="pi pi-minus"
-        />
-        <label for="firstStoreDuration">Nombre de semaine prévue dans ce magasin pour la deuxième session</label>
-      </span>
+        <!-- Si on a la formation en deux fois : -->
+        <span class="p-float-label" v-if="isFormationInTwoPart">
+          <InputNumber
+            v-model="firstStoresecondDuration"
+            id="firstStoreDuration"
+            :max="secondDuration"
+            :min="secondDuration < 2 ? secondDuration : 2"
+            suffix=" semaines"
+            showButtons 
+            buttonLayout="horizontal"
+            decrementButtonClass="p-button-secondary"
+            incrementButtonClass="p-button-secondary"
+            incrementButtonIcon="pi pi-plus" 
+            decrementButtonIcon="pi pi-minus"
+          />
+          <label for="firstStoreDuration">Nombre de semaines prévues dans ce magasin pour la deuxième session</label>
+        </span>
 
-      <span class="p-float-label">
-        <Dropdown 
-          id="firstStore" 
-          v-model="firstStore" 
-          :options="storeOptions.first"
-          optionLabel="label"
-          optionValue="value"
+        <span class="p-float-label">
+          <Dropdown 
+            id="firstStore" 
+            v-model="firstStore" 
+            :options="storeOptions.first"
+            optionLabel="label"
+            optionValue="value"
+          />
+          <label for="firstStore">Magasin parrain</label>
+        </span>
+        <span class="p-float-label">
+          <Dropdown 
+            id="firstNeedHotel" 
+            v-model="firstNeedHotel" 
+            :options="yesNoOptions"
+          />
+          <label for="firstNeedHotel">Besoin d'un hôtel ?</label>
+        </span>
+      </div>
+      <div class="second-store card" v-if="secondStoreDuration > 0">
+        <span class="store-title">
+          Choix du deuxième magasin parrain :
+        </span>
+        <span class="p-float-label">
+          <InputNumber
+            disabled
+            v-model="secondStoreDuration"
+            id="secondStoreDuration"
+            :max="secondStoreDuration"
+            :min="secondStoreDuration"
+            suffix=" semaines"
+          />
+          <label for="secondStoreDuration">Nombre de semaines prévues dans ce magasin</label>
+        </span>
+        <span class="p-float-label">
+          <Dropdown 
+            id="firstStore" 
+            v-model="secondStore" 
+            :options="storeOptions.second"
+            optionLabel="label"
+            optionValue="value"
+          />
+          <label for="firstStore">Magasin parrain</label>
+        </span>
+        <span class="p-float-label">
+          <Dropdown 
+            id="secondNeedHotel" 
+            v-model="secondNeedHotel" 
+            :options="yesNoOptions"
+          />
+          <label for="secondNeedHotel">Besoin d'un hôtel ?</label>
+        </span>
+      </div>
+      <div class="centered">
+        <Button 
+          label="Envoyer"
+          class="p-button-rounded p-button-lg"
+          :disabled="!canSaveFormation" 
+          @click="dispatchFormation({
+            recordId,
+            job,
+            formationType, 
+            targetJob, 
+            beginDate,
+            endDate,
+            firstStore, 
+            secondStore,
+            firstNeedHotel,
+            secondNeedHotel,
+            firstStoreDuration,
+            isFormationInTwoPart,
+            firstStoresecondDuration,
+            secondStoreDuration,
+            duration,
+            secondDuration,
+          })"
         />
-        <label for="firstStore">Magasin parrain</label>
-      </span>
-      <span class="p-float-label">
-        <Dropdown 
-          id="firstNeedHotel" 
-          v-model="firstNeedHotel" 
-          :options="yesNoOptions"
-        />
-        <label for="firstNeedHotel">Besoin d'un hôtel ?</label>
-      </span>
+        <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
+      </div>
+      <Message v-if="status === 'error'" severity='error' :closable="false">
+        Une erreur est survenue, merci de de remonter ce problème s'il persiste :
+        {{ error.message }}, code : {{error.statusCode}} / {{error.error}}
+      </Message>
     </div>
-    <div class="second-store store" v-if="secondStoreDuration > 0">
-      <span class="store-title">
-        Choix du deuxième magasin parrain :
-      </span>
-      <span class="p-float-label">
-        <InputNumber
-          disabled
-          v-model="secondStoreDuration"
-          id="secondStoreDuration"
-          :max="secondStoreDuration"
-          :min="secondStoreDuration"
-          suffix=" semaines"
-        />
-        <label for="secondStoreDuration">Nombre de semaine prévue dans ce magasin</label>
-      </span>
-      <span class="p-float-label">
-        <Dropdown 
-          id="firstStore" 
-          v-model="secondStore" 
-          :options="storeOptions.second"
-          optionLabel="label"
-          optionValue="value"
-        />
-        <label for="firstStore">Magasin parrain</label>
-      </span>
-      <span class="p-float-label">
-        <Dropdown 
-          id="secondNeedHotel" 
-          v-model="secondNeedHotel" 
-          :options="yesNoOptions"
-        />
-        <label for="secondNeedHotel">Besoin d'un hôtel ?</label>
-      </span>
-    </div>
-    <div>
-      <Button 
-        label="Envoyer" 
-        :disabled="!canSaveFormation" 
-        @click="dispatchFormation({
-          recordId,
-          job,
-          formationType, 
-          targetJob, 
-          beginDate,
-          endDate,
-          firstStore, 
-          secondStore,
-          firstNeedHotel,
-          secondNeedHotel,
-          firstStoreDuration,
-          isFormationInTwoPart,
-          firstStoresecondDuration,
-          secondStoreDuration,
-          duration,
-          secondDuration,
-        })"
-      />
-      <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
-    </div>
-    <Message v-if="status === 'error'" severity='error' :closable="false">
-      Une erreur est survenue, merci de de remonter ce problème s'il persiste :
-      {{ error.message }}, code : {{error.statusCode}} / {{error.error}}
-    </Message>
   </div>
 
   <div class="layout" v-else>
@@ -447,6 +453,7 @@ export default {
 
     console.log('RECORD ID', this.recordId);
     console.log('RECORD job', this.job);
+    if(this.recordId === null) this.$router.push({name:'PersonChoice'});
 
     if(this.startingRules.length === 1) {
       this.isFormationInTwoPart = this.startingRules[0].fields['Deux périodes séparées en magasins parrains'];
@@ -463,19 +470,29 @@ export default {
 </script>
 
 <style scoped>
+.formation-type-container{
+  margin-bottom: 30px;
+}
 .only-type {
-  margin-bottom: 25px;
-  margin-top: -25px;
+  margin-top: 15px;
+}
+.no-margin-bottom {
+  margin-bottom: 0 !important;
 }
 .duration {
   margin-bottom: 40px;
-}
-.store {
-  width: 20%;
-  margin-top: 30px;
+  font-weight: bold;
 }
 .store-title {
   display: block;
+  margin-bottom: 30px;
+}
+.card {
+  padding: 10px;
+  border-color: lightgray;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 10px;
   margin-bottom: 30px;
 }
 </style>
