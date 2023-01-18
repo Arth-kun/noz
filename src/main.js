@@ -33,3 +33,13 @@ createApp(App)
   .component('Message', Message)
   .component('Calendar', Calendar)
   .mount('#app');
+
+Date.prototype.addDays = function(days) {
+  const date = new Date(this.valueOf());
+  date.setDate(date.getDate() + days);
+  return date;
+}
+
+Date.prototype.isBetween = function(min, max) {
+  return this.getTime() >= min.getTime() && this.getTime() <= max.getTime();
+}

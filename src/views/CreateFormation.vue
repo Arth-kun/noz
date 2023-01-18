@@ -177,7 +177,6 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 import Header from '../components/Header.vue';
-import { getWeekNumber } from '../utils.js';
 
 export default {
   name: 'CreateFormation',
@@ -231,21 +230,15 @@ export default {
     initInvalidDate() {
       // v2 for the update of 2023 jan
       // Need to check on each day, is it a day that is in the database, 
-      // if not add it to the liste of invalidDates
+      // if not add it to the list of invalidDates
       this.invalidDates = [new Date()];
-
       for (let index = 0; index < 1820; index++) {
         const date = new Date().addDays(index);
-
         const condition = this.formationDates.find(formationDate => (
           new Date(formationDate).toDateString() === date.toDateString()
         ));
-
-        getWeekNumber(date); // sert à rien mais c'est pour pas instancier le addDays dans ce fichier
-        // à voir si on peut pas le faire autrement
-
         if(condition === undefined) {
-          this.invalidDates.push(date.addDays(1));
+          this.invalidDates.push(date);
         }
       }
     },
