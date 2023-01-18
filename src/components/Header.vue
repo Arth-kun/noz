@@ -1,7 +1,7 @@
 <template>
   <header>
     <img src="../assets/logo_noz.png" alt="Logo Noz">
-    <h1>Demande de formation terrain</h1>
+    <h1 class="centered">Demande de formation terrain</h1>
   </header>
 </template>
 
