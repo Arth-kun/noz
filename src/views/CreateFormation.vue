@@ -244,7 +244,7 @@ export default {
           new Date(formationDate).toDateString() === date.toDateString()
         ));
         if(condition === undefined) {
-          this.invalidDates.push(date);
+          this.invalidDates.push(date.addDays(1));
         }
       }
     },
