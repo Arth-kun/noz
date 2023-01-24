@@ -7,6 +7,7 @@ import Message from 'primevue/message';
 import InputNumber from 'primevue/inputnumber';
 import Calendar from 'primevue/calendar';
 import Tooltip from 'primevue/tooltip';
+import Checkbox from 'primevue/checkbox';
 
 import App from './App.vue';
 import router from './router';
@@ -32,6 +33,7 @@ createApp(App)
   .component('InputNumber', InputNumber)
   .component('Message', Message)
   .component('Calendar', Calendar)
+  .component('Checkbox', Checkbox)
   .mount('#app');
 
 Date.prototype.addDays = function(days) {

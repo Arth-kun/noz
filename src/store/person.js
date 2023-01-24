@@ -38,6 +38,9 @@ export default {
     SAVE_XP(state, payload) {
       return state.xp = payload.xp;
     },
+    SAVE_ZONE(state, payload) {
+      return state.zone = payload.zone;
+    },
     SET_STORE_LIST(state, payload) {
       return state.allStoreList = [...state.allStoreList, ...payload.allStoreList];
     },
@@ -119,12 +122,14 @@ export default {
         context.commit('SAVE_PERSON_ID', { recordId: record.id });
         context.commit('SAVE_JOB', { job: payload.job });
         context.commit('SAVE_XP', { xp: payload.xp });
+        context.commit('SAVE_ZONE', { zone: payload.zone });
       });
     },
     resetState(context) {
       context.commit('SAVE_PERSON_ID', { recordId: null });
       context.commit('SAVE_JOB', { job: '' });
       context.commit('SAVE_XP', { xp: '' });
+      context.commit('SAVE_ZONE', { zone: '' });
     }
   },
 }

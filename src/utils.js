@@ -25,3 +25,16 @@ export function getWeekNumber( d ) {
   return weekNr;    
 
 }
+
+
+export function getAmountOfDays( formationDuration ) {
+    let amountOfDays = formationDuration * 7;
+    if(formationDuration % 2) {
+      // Si la durée en semaine est impaire => fini un samedi
+      amountOfDays -= 3;
+    } else {
+      // Si la durée en semaine est paire => fini un vendredi
+      amountOfDays -= 4;
+    }
+    return amountOfDays;
+}

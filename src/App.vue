@@ -30,17 +30,32 @@ body, html {
 
 @media (max-width: 499px) {
   .col{
-    width: 90vw;
+    width: 95vw;
+  }
+  .card .p-float-label .p-inputwrapper-filled ~ label {
+    top: -1.5rem;
   }
 }
 
-@media (min-width: 500px) and (max-width: 799px) {
+@media (min-width: 500px) and (max-width: 699px) {
+  .col{
+    width: 75vw;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 799px) {
   .col{
     width: 65vw;
   }
 }
 
-@media (min-width: 800px) and (max-width: 1199px) {
+@media (min-width: 800px) and (max-width: 999px) {
+  .col{
+    width: 55vw;
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1199px) {
   .col{
     width: 45vw;
   }
@@ -65,7 +80,7 @@ body, html {
 
 .p-float-label label {
   margin-top: 0;
-  top: 37%;
+  top: 34%;
 }
 
 .p-inputtext.p-component {

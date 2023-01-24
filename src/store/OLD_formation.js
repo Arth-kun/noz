@@ -103,12 +103,50 @@ export default {
       }
     },
     dispatchFormation(context, payload) {
-      context.dispatch('createFormation', { ...payload, beginDate: payload.firstBeginDate, endDate: payload.firstEndDate, duration: 2, firstPart: true });
-      context.dispatch('createFormation', { ...payload, beginDate: payload.secondBeginDate, endDate: payload.secondEndDate, duration: 2, firstPart: false });
+      const { endDate, beginDate, isFormationInTwoPart } = payload;
+
+      if (isFormationInTwoPart) {
+        const { duration, secondDuration } = payload;
+        let amountOfDays = duration * 7;
+
+        if(duration % 2) {
+          // Si la durée en semaine est impaire => on fini un samedi
+          amountOfDays -= 3;
+        } else {
+          amountOfDays -= 4;
+        }
+
+        const firstBeginDate = beginDate;
+        const firstEndDate = firstBeginDate.addDays(amountOfDays);
+
+        let amountOfDaysTwo = secondDuration * 7;
+        const totalDuration = duration + secondDuration + 1;
+
+        if(!(totalDuration % 2) && !(secondDuration % 2)) {
+          // even and even
+          amountOfDaysTwo -= 4;
+        } else if(totalDuration % 2 && secondDuration % 2) {
+          // odd and odd
+          amountOfDaysTwo -= 2;
+        } else {
+          // odd and even or even and odd
+          amountOfDaysTwo -= 3;
+        }
+
+        const secondEndDate = endDate;
+        const secondBeginDate = secondEndDate.addDays(-amountOfDaysTwo);
+
+        context.dispatch('createFormation', { ...payload, beginDate: firstBeginDate, endDate: firstEndDate });
+        context.dispatch('createFormation', { ...payload, beginDate: secondBeginDate, endDate: secondEndDate, duration: secondDuration });
+
+
+      } else {
+        context.dispatch('createFormation', payload);
+      }
     },
     createFormation(context, payload) {
       context.commit('CHANGE_STATUS', { status: 'sending' });
-
+      
       const { endDate, beginDate } = payload;
 
       const begin = formatDate(beginDate);
@@ -177,12 +215,13 @@ export default {
 
 
         weeks = weeks.map((week, index) => {
-          // On crée une condition pour déterminer si c'est la première semaine ou non
+          // On créé une condition pour déterminer si c'est la première semaine ou non
+          const isFirstStore = (index + 1) <= payload.firstStoreDuration;
           return {
             fields: {
-              "Semaine formation": payload.firstPart ? index + 1 : index + 1 + 2,
-              "Magasin Parrain": [payload.firstPart || payload.sameStore ? payload.firstStore : payload.secondStore],
-              "Besoin Hotel": payload.firstPart || payload.sameStore ? payload.firstNeedHotel : payload.secondNeedHotel,
+              "Semaine formation": index + 1,
+              "Magasin Parrain": [isFirstStore ? payload.firstStore: payload.secondStore],
+              "Besoin Hotel": isFirstStore ? payload.firstNeedHotel : payload.secondNeedHotel,
               "Id Formation": [record.id],
               "Date de début semaine": week.weekBeginDate,
               "Date de fin semaine": week.weekEndDate
