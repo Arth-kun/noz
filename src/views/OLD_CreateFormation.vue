@@ -2,7 +2,6 @@
   <Header />
   <div class="layout" v-if="status !== 'success'">
     <div class="col">
-      <!-- Choix de la formation -->
       <div class="formation-type-container">
         <span class="p-float-label no-margin-bottom">
           <Dropdown 
@@ -17,7 +16,6 @@
           <span>Vous ne pouvez choisir que le type "{{formationType}}"</span>
         </div>
       </div>
-      <!-- Poste visé si Mercato-->
       <span class="p-float-label" v-if="formationType === 'Mercato'">
         <Dropdown 
           id="targetJob" 
@@ -26,39 +24,65 @@
         />
         <label for="targetJob">Poste visé</label>
       </span>
-      <!-- Info : durée de la formation -->
       <div class="duration">
         {{ `Durée de la formation : ${duration === 0 ? '?' : duration} semaines`}}
       </div>
-      <!-- Calendrier de la date de début -->
       <span class="p-float-label">
         <Calendar 
-          id="firstBeginDate" 
-          v-model="firstBeginDate" 
+          id="beginDate" 
+          v-model="beginDate" 
           :disabledDates="invalidDates"
           :disabledDays="invalidDays"
           :minDate="new Date()"
           :disabled="duration === 0"
           dateFormat="dd/mm/yy"
         />
-        <label for="firstBeginDate">Date de début</label>
+        <!-- <Calendar 
+          id="beginDate" 
+          v-model="beginDate" 
+          dateFormat="dd/mm/yy"
+        /> -->
+        <label for="beginDate">Date de début</label>
       </span>
-      <!-- Checkbox : Si la formation est dans le même magasin ou non -->
-      <div class="field-checkbox same-checkbox" v-if="firstBeginDate !== '' && duration !== 0">
-        <Checkbox v-model="sameStore" :binary="true" inputId="sameStore" />
-        <label for="sameStore">Je souhaite faire cette formation dans le même magasin</label>
-      </div>
-      <!-- Carte du premier magasin -->
-      <div class="first-store card" v-if="firstBeginDate !== '' && duration !== 0">
+      <div class="first-store card" v-if="beginDate !== '' && duration !== 0">
         <span class="store-title">
-          {{`Choix du ${!sameStore ? 'premier' : ''} magasin parrain :`}}
+          {{`Choix du ${secondStoreDuration > 0 ? 'premier' : ''} magasin parrain :`}}
         </span>
-        <!-- Affichage de la durée -->
-        <div class="weeks-container">
-          <span v-if="sameStore">{{ `2 x 2 semaines entrecoupées de ${this.gapWeek} semaines de pause` }}</span>
-          <span v-else>{{ `2 semaines du ${firstBeginDate.toLocaleDateString()} au ${firstEndDate.toLocaleDateString()}` }}</span>
+        <div class="p-float-label">
+          <InputNumber
+            v-model="firstStoreDuration"
+            id="firstStoreDuration"
+            :max="duration"
+            :min="duration < 2 ? duration : 2"
+            suffix=" semaines"
+            showButtons 
+            buttonLayout="horizontal"
+            decrementButtonClass="p-button-secondary"
+            incrementButtonClass="p-button-secondary"
+            incrementButtonIcon="pi pi-plus" 
+            decrementButtonIcon="pi pi-minus"
+          />
+          <label for="firstStoreDuration">Nombre de semaines prévues dans ce magasin {{isFormationInTwoPart ? 'pour la première session' : ''}}</label>
         </div>
-        <!-- Choix du magasin parrain -->
+
+        <!-- Si on a la formation en deux fois : -->
+        <span class="p-float-label" v-if="isFormationInTwoPart">
+          <InputNumber
+            v-model="firstStoresecondDuration"
+            id="firstStoreDuration"
+            :max="secondDuration"
+            :min="secondDuration < 2 ? secondDuration : 2"
+            suffix=" semaines"
+            showButtons 
+            buttonLayout="horizontal"
+            decrementButtonClass="p-button-secondary"
+            incrementButtonClass="p-button-secondary"
+            incrementButtonIcon="pi pi-plus" 
+            decrementButtonIcon="pi pi-minus"
+          />
+          <label for="firstStoreDuration">Nombre de semaines prévues dans ce magasin pour la deuxième session</label>
+        </span>
+
         <span class="p-float-label">
           <Dropdown 
             id="firstStore" 
@@ -69,7 +93,6 @@
           />
           <label for="firstStore">Magasin parrain</label>
         </span>
-        <!-- Checkbox du besoin d'hôtel -->
         <span class="p-float-label">
           <Dropdown 
             id="firstNeedHotel" 
@@ -79,23 +102,30 @@
           <label for="firstNeedHotel">Besoin d'un hôtel ?</label>
         </span>
       </div>
-      <!-- Carte du second magasin -->
       <div class="second-store card" v-if="secondStoreDuration > 0">
         <span class="store-title">
           Choix du deuxième magasin parrain :
         </span>
-        <div class="weeks-container">
-          <span>{{ `2 semaines du ${secondBeginDate.toLocaleDateString()} au ${secondEndDate.toLocaleDateString()}` }}</span>
-        </div>
+        <span class="p-float-label">
+          <InputNumber
+            disabled
+            v-model="secondStoreDuration"
+            id="secondStoreDuration"
+            :max="secondStoreDuration"
+            :min="secondStoreDuration"
+            suffix=" semaines"
+          />
+          <label for="secondStoreDuration">Nombre de semaines prévues dans ce magasin</label>
+        </span>
         <span class="p-float-label">
           <Dropdown 
-            id="secondStore" 
+            id="firstStore" 
             v-model="secondStore" 
             :options="storeOptions.second"
             optionLabel="label"
             optionValue="value"
           />
-          <label for="secondStore">Magasin parrain</label>
+          <label for="firstStore">Magasin parrain</label>
         </span>
         <span class="p-float-label">
           <Dropdown 
@@ -116,21 +146,18 @@
             job,
             formationType, 
             targetJob, 
-            firstBeginDate,
-            firstEndDate,
-            secondBeginDate,
-            secondEndDate,
-            sameStore,
+            beginDate,
+            endDate,
             firstStore, 
             secondStore,
             firstNeedHotel,
             secondNeedHotel,
             firstStoreDuration,
-            // isFormationInTwoPart,
-            // firstStoreSecondDuration,
+            isFormationInTwoPart,
+            firstStoresecondDuration,
             secondStoreDuration,
             duration,
-            // secondDuration,
+            secondDuration,
           })"
         />
         <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
@@ -156,7 +183,6 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 import Header from '../components/Header.vue';
-import { getAmountOfDays } from '../utils.js';
 
 export default {
   name: 'CreateFormation',
@@ -167,30 +193,46 @@ export default {
     return {
       jobs: [],
       yesNoOptions : ['Oui', 'Non'],
-      sameStore: true,
-      gapWeek: 2,
 
       formationType: '',
       targetJob: '',
-      firstBeginDate: '',
-      firstEndDate: '',
-      secondBeginDate: '',
-      secondEndDate: '',
+      beginDate: '',
+      endDate: '',
       firstStore: '',
       secondStore: '',
       firstNeedHotel:'',
       secondNeedHotel:'',
-      firstStoreDuration: 4,
+      firstStoreDuration: 0,
+      firstStoresecondDuration: 0,
       secondStoreDuration: 0,
       
+      isFormationInTwoPart: false,
       invalidDates: [new Date()],
       invalidDays: [0, 1, 3, 4, 5, 6],
       filteredRules: [],
       storeOptions: { first: [], second: []},
-      duration: 4,
+      duration: 0,
+      secondDuration: 0,
     }
   },
   methods: {
+    // initInvalidDate(tuesdayRule = 'Impaire') {
+    //   this.invalidDates = [new Date()];
+    //   if(tuesdayRule === 'Impaire' || tuesdayRule === 'Paire') {
+    //     for (let index = 0; index < 1820; index++) {
+    //       const date = new Date().addDays(index);
+
+    //       const weekNumber = getWeekNumber(date) - 1;
+
+    //       // If the rule is odd then apply on not modulo of 2, else it's modulo of 2
+    //       const condition = tuesdayRule === 'Impaire' ? !(weekNumber % 2) : weekNumber % 2;
+          
+    //       if(condition) {
+    //         this.invalidDates.push(date);
+    //       }
+    //     }
+    //   }
+    // },
     initInvalidDate() {
       // v2 for the update of 2023 jan
       // Need to check on each day, is it a day that is in the database, 
@@ -202,22 +244,29 @@ export default {
           new Date(formationDate).toDateString() === date.toDateString()
         ));
         if(condition === undefined) {
-          // Chez moi, si je mets la fonction addDays(1), les dates qui sortent sont les 15 et 26,
-          // c'es-à-dire un jour de plus que les dates de la BDD,
-          // donc je pense effectivement que c'est un problème de time zone...
-          // Je laisse les 2 lignes pour que l'on puisse tester tous les deux à tour de rôle :)
-          // this.invalidDates.push(date.addDays(1));
-          this.invalidDates.push(date);
+          this.invalidDates.push(date.addDays(1));
         }
       }
     },
-    filterStore(storeIndex, twoStores) {
+    filterStore(storeIndex, formationBeginDate, formationDuration) {
+      //console.log(storeIndex, formationBeginDate, formationDuration);
+
       this.storeOptions[storeIndex] = this.storeList.filter(store => {
-        // Si la zone du magasin n'est pas celle de la personne concernée
-        // alors on enlève le magasin de la liste des choix
-        if(store.fields['Zone'].indexOf(this.zone) == -1) {
-          return false;
+        //console.log(store);
+
+        // Get formation Duration and end Date => Mettre dans une fonction
+        let amountOfDays = (formationDuration - 1) * 7;
+        if(formationDuration % 2) {
+          // Si la durée en semaine est impaire => fini un samedi
+          amountOfDays += 4;
+        } else {
+          // Si la durée en semaine est paire => fini un vendredi
+          amountOfDays += 3;
         }
+
+        const formationEndDate = formationBeginDate.addDays(amountOfDays);
+
+        // ---------------------
 
         // Check pour chaque début et fin d'absence ou de formation prévu si les dates sont dans l'interval ou non
         // => Mettre dans une fonction
@@ -225,36 +274,11 @@ export default {
         // Check indispo
         if(store.fields['Date début indispo'] && store.fields['Date fin indispo']) {
           // Check début indispo
-          if(!twoStores){
-            // S'il n'y a qu'un magasin
-            const isOutFirst = this.checkDatesMatches(store.fields['Date début indispo'], this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-            const isOutSecond = this.checkDatesMatches(store.fields['Date début indispo'], this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-            // On évince un magasin si la jauge est atteinte à l'une ou l'autre date
-            isOut = isOutFirst || isOutSecond
-          } else {
-            // Si il y a deux magasins
-            if(storeIndex == 'first'){
-              isOut = this.checkDatesMatches(store.fields['Date début indispo'], this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-            } else {
-              isOut = this.checkDatesMatches(store.fields['Date début indispo'], this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-            }
-          }
+          isOut = this.checkDatesMatches(store.fields['Date début indispo'], formationBeginDate, formationEndDate);
+
           // Check fin indispo si pas déjà out
           if(!isOut) {
-            if(!twoStores){
-              // S'il n'y a qu'un magasin
-              const isOutFirst = this.checkDatesMatches(store.fields['Date fin indispo'], this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-              const isOutSecond = this.checkDatesMatches(store.fields['Date fin indispo'], this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-              // On évince un magasin si la jauge est atteinte à l'une ou l'autre date
-              isOut = isOutFirst || isOutSecond
-            } else {
-              // Si il y a deux magasins, on évince les magasins suivant le dropdown à alimenter
-              if(storeIndex == 'first') {
-                isOut = this.checkDatesMatches(store.fields['Date fin indispo'], this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-              } else {
-                isOut = this.checkDatesMatches(store.fields['Date fin indispo'], this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-              }
-            }
+            isOut = this.checkDatesMatches(store.fields['Date fin indispo'], formationBeginDate, formationEndDate);
           }
         }
         
@@ -265,64 +289,22 @@ export default {
           // Check début semaines forma si pas déjà out
           if(!isOut) {
             const beginWeekDates = this.filterDateCanceled(store.fields["Status semaine formation"], store.fields['Date début semaines']);
-            if(!twoStores){
-              // S'il n'y a qu'un magasin
-              const isOutFirst = this.checkDatesMatches(beginWeekDates, this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-              const isOutSecond = this.checkDatesMatches(beginWeekDates, this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-              // On évince un magasin si la jauge est atteinte à l'une ou l'autre date
-              isOut = isOutFirst || isOutSecond
-            } else {
-              // Si il y a deux magasins
-              if(storeIndex == 'first'){
-                isOut = this.checkDatesMatches(beginWeekDates, this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-              } else {
-                isOut = this.checkDatesMatches(beginWeekDates, this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-              }
-            }
+            isOut = this.checkDatesMatches(beginWeekDates, formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
           }
           // Check fin semaines forma si pas déjà out
           if(!isOut) {
             const endWeekDates = this.filterDateCanceled(store.fields["Status semaine formation"], store.fields['Date fin semaines']);
-            if(!twoStores){
-              // S'il n'y a qu'un magasin
-              const isOutFirst = this.checkDatesMatches(endWeekDates, this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-              const isOutSecond = this.checkDatesMatches(endWeekDates, this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-              // On évince un magasin si la jauge est atteinte à l'une ou l'autre date
-              isOut = isOutFirst || isOutSecond
-            } else {
-              // Si il y a deux magasins, on évince les magasins suivant le dropdown à alimenter
-              if(storeIndex == 'first') {
-                isOut = this.checkDatesMatches(endWeekDates, this.firstBeginDate, this.firstEndDate, store.fields['Jauge stagiaire']);
-              } else {
-                isOut = this.checkDatesMatches(endWeekDates, this.secondBeginDate, this.secondEndDate, store.fields['Jauge stagiaire']);
-              }
-            }
+            isOut = this.checkDatesMatches(endWeekDates, formationBeginDate, formationEndDate, store.fields['Jauge stagiaire']);
           }
         }
+
+        // ---------------------
 
         return !isOut;
 
       }).map(filteredStore => (
-        { value: filteredStore.id, label: `${filteredStore.fields["Nom du magasin"]} (${filteredStore.fields["Ordre de priorité"]})`, priority: filteredStore.fields["Ordre de priorité"]}
-      )).sort((a, b) =>
-        {
-          const aPrio = a.priority ? a.priority : 9999;
-          const bPrio = b.priority ? b.priority : 9999;
-          return aPrio - bPrio;
-        }
-      );
-      // Populate the dropdowns with a default value
-      if(this.storeOptions["first"].length > 0 && storeIndex == "first"){
-        this.firstStore = this.storeOptions["first"][0]['value']
-      }
-      if(storeIndex == "second"){
-        if(this.storeOptions["second"].length > 0 && this.storeOptions["second"][0]['value'] !== this.storeOptions["first"][0]['value']){
-          this.secondStore = this.storeOptions["second"][0]['value']
-        }
-        else if(this.storeOptions["second"].length > 1){
-          this.secondStore = this.storeOptions["second"][1]['value']  
-        }
-      }
+        { value: filteredStore.id, label: filteredStore.fields["Nom du magasin"] }
+      ));
     },
     filterDateCanceled(status, dates) {
       // Return dates that doesn't have a "Désistement" status
@@ -336,12 +318,14 @@ export default {
 
       datesArray.forEach(date => {
         if(new Date(date).isBetween(beginDate, endDate)) {
+
           if(!maxCapacity) {
             cantBeChosen = true;
           } else {
             // Check combien il y a de fois la même date de début dans le tableau
             // Si c'est autant que le MaxCapacity => cantBeChosen passe à true
             const duplicates = datesArray.filter(filterDate => filterDate === date);
+
             if(duplicates.length >= maxCapacity) {
               cantBeChosen = true;
             }
@@ -349,6 +333,7 @@ export default {
 
         }
       });
+
       return cantBeChosen;
     },
     async returnHome() {
@@ -367,7 +352,7 @@ export default {
           this.targetJob.length > 0 :
           true
         ) &&
-        this.firstBeginDate !== '' &&
+        this.beginDate !== '' &&
         this.firstStore.length > 0 &&
         this.firstNeedHotel.length > 0 &&
         (this.firstStoreDuration !== this.duration ?
@@ -376,17 +361,10 @@ export default {
         )
       );
     },
-    ...mapState('person', ['job', 'xp', 'recordId', 'zone']),
+    ...mapState('person', ['job', 'xp', 'recordId']),
     ...mapState('formation', ['storeList', 'formationDates', 'formationTypes', 'startingRules', 'status', 'error'])
   },
   watch: {
-    sameStore(value) {
-      if(value) {
-        this.firstStoreDuration = 4
-      } else {
-        this.firstStoreDuration = 2
-      }
-    },
     formationType(value) {
       this.filteredRules = this.startingRules.filter(rule => 
         rule.fields['Type de formation'] === value
@@ -396,10 +374,13 @@ export default {
         // Affichage uniquement des jobs possible restant
         this.jobs = this.filteredRules.map(rule => rule.fields['Poste visé']);
         this.targetJob = '';
-        // this.duration = 0; // refacto duration
+        this.duration = 0;
       } 
       
       if(this.filteredRules.length === 1) {
+        // Seulement pour integration
+        this.duration = this.filteredRules[0].fields['Durée en semaine'];
+
         // Récupération de la règle des mardis (paire, impaire ou les deux)
         // + Relance de l'init des jours
         const tuesdayRule = this.filteredRules[0].fields['Mardi début de formation'];
@@ -413,44 +394,33 @@ export default {
           rule.fields['Poste visé'] === value
         );
 
+        this.duration = chosenRule.fields['Durée en semaine'];
+
         // Récupération de la règle des mardis (paire, impaire ou les deux)
         // + Relance de l'init des jours
         const tuesdayRule = chosenRule.fields['Mardi début de formation'];
         this.initInvalidDate(tuesdayRule);
       }
     },
-    firstBeginDate(value) {
-      // Calcul de la date de fin en comptant la pause
-      const globalDuration = this.duration + this.gapWeek;
-      let globalAmountOfDays = getAmountOfDays(globalDuration);
-
-      this.secondEndDate = value.addDays(globalAmountOfDays);
-
-      // Calcul des 2 paires de dates de début et fin
-      // La formation est tjs de 2 * 2 semaines
-      const duration = 2;
-      const secondDuration = 2;
-
-      this.firstEndDate = this.firstBeginDate.addDays(getAmountOfDays(duration));
-
-      let amountOfDaysTwo = secondDuration * 7;
-
-      // Le paire ou impaire dépend uniquement du nombre de semaines séparant les 2 parties de la formation
-      if(this.gapWeek % 2) {
-        amountOfDaysTwo -= 2
+    beginDate(value) {
+      // Spécificité dans le cas où la formation se fait en deux fois (il n'y a toujours qu'un mag sans ce cas)
+      const duration = this.isFormationInTwoPart ? this.firstStoreDuration + this.firstStoresecondDuration + 1 : this.duration;
+      let amountOfDays = duration * 7;
+      if(duration % 2) {
+        // Si la durée en semaine est impaire => on fini un samedi
+        amountOfDays -= 3;
       } else {
-        amountOfDaysTwo -= 4
+        amountOfDays -= 4;
       }
-
-      this.secondBeginDate = this.secondEndDate.addDays(-amountOfDaysTwo);
-
+      this.endDate = value.addDays(amountOfDays);
       // Refiltrer les magasins et afficher uniquement les magasins qui correspondent
-      const twoStores = this.firstStoreDuration < this.duration
-      this.filterStore("first", twoStores);
-      this.filterStore("second", twoStores);
+      this.filterStore("first", value, this.isFormationInTwoPart ? this.firstStoreDuration + this.firstStoresecondDuration + 1 : this.firstStoreDuration);
     },
     duration(value) {
       this.firstStoreDuration = value;
+    },
+    secondDuration(value) {
+      this.firstStoresecondDuration = value;
     },
     firstStoreDuration(value, pastValue) {
       this.secondStoreDuration = this.duration - value;
@@ -461,12 +431,22 @@ export default {
         this.firstStore = '';
       }
 
-      if(this.firstBeginDate) {
-        const twoStores = value < this.duration
-        this.filterStore("first", twoStores);
-        this.filterStore("second", twoStores);
+      if(this.beginDate) {
+        const firstDuration = this.isFormationInTwoPart ? value + this.firstStoresecondDuration + 1 : value;
+        this.filterStore("first", this.beginDate, firstDuration);
       }
     },
+    secondStoreDuration(value) {
+      let amountOfDays = this.firstStoreDuration * 7;
+      if(this.firstStoreDuration % 2) {
+        // Si la durée en semaine est impaire => recommence un lundi au lieu d'un mardi (-1 jour)
+        amountOfDays -= 1;
+      }
+
+      const secondStoreBeginDate = this.beginDate.addDays(amountOfDays);
+
+      this.filterStore("second", secondStoreBeginDate, value);
+    }
   },
   beforeMount() {
     this.initInvalidDate();
@@ -474,6 +454,13 @@ export default {
     console.log('RECORD ID', this.recordId);
     console.log('RECORD job', this.job);
     if(this.recordId === null) this.$router.push({name:'PersonChoice'});
+
+    if(this.startingRules.length === 1) {
+      this.isFormationInTwoPart = this.startingRules[0].fields['Deux périodes séparées en magasins parrains'];
+      if(this.isFormationInTwoPart) {
+        this.secondDuration = this.startingRules[0].fields['Durée en semaine deuxième période'];
+      }
+    }
 
     if(this.formationTypes.length === 1) {
       this.formationType = this.formationTypes[0];
@@ -493,12 +480,12 @@ export default {
   margin-bottom: 0 !important;
 }
 .duration {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   font-weight: bold;
 }
 .store-title {
   display: block;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 .card {
   padding: 10px;
@@ -507,16 +494,5 @@ export default {
   border-width: 1px;
   border-radius: 10px;
   margin-bottom: 30px;
-}
-.field-checkbox > label {
-  line-height: 1;
-  margin-left: .5rem;
-}
-.same-checkbox {
-  margin-bottom: 30px;
-}
-.weeks-container {
-  margin-bottom: 20px;
-  font-style: italic;
 }
 </style>
