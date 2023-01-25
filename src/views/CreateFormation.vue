@@ -198,8 +198,8 @@ export default {
       this.invalidDates = [new Date()];
       for (let index = 0; index < 1820; index++) {
         const date = new Date().addDays(index);
-        const condition = this.formationDates.find(formationDate => (
-          new Date(formationDate).toDateString() === date.toDateString()
+        const condition = this.formationDates.find(formationDateObject => (
+          new Date(formationDateObject.fields["Date"]).toDateString() === date.toDateString()
         ));
         if(condition === undefined) {
           // Chez moi, si je mets la fonction addDays(1), les dates qui sortent sont les 15 et 26,
@@ -210,6 +210,16 @@ export default {
           this.invalidDates.push(date);
         }
       }
+      // Invalid dates for which formation capacity is reached
+      // For all formation dates
+      this.formationDates.forEach(element => {
+        // Get back already taken places count with the date
+        const takenPlacesCount = this.formationDatesTakenPlacesCount[element.fields['Date']]
+        // Invalid date if max capacity is smaller or equal to taken places count or if max capacity is null
+        if((takenPlacesCount && element.fields['Nombre de stagiaire max'] <= takenPlacesCount) || element.fields['Nombre de stagiaire max'] == 0) {
+          this.invalidDates.push(new Date(element.fields['Date']));
+        }
+      });
     },
     filterStore(storeIndex, twoStores) {
       this.storeOptions[storeIndex] = this.storeList.filter(store => {
@@ -381,7 +391,7 @@ export default {
       );
     },
     ...mapState('person', ['job', 'xp', 'recordId', 'zone']),
-    ...mapState('formation', ['storeList', 'formationDates', 'formationTypes', 'startingRules', 'status', 'error'])
+    ...mapState('formation', ['storeList', 'formationDates', 'formationTypes', 'startingRules', 'status', 'error', 'formationDatesTakenPlacesCount'])
   },
   watch: {
     sameStore(value) {

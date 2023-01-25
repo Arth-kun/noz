@@ -97,7 +97,7 @@ export default {
   },
   methods: {
     ...mapActions('person', ['createPerson', 'getAllStore', 'getZones']),
-    ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getFormationDates', 'getDurationRules']),
+    ...mapActions('formation', ['setDurationAndFormationTypes', 'getStoreList', 'getFormationDates', 'getDurationRules', 'getFormationsByDate']),
   },
   computed: {
     canSavePerson() {
@@ -141,6 +141,7 @@ export default {
     await this.getStoreList();
     await this.getFormationDates();
     await this.getDurationRules();
+    await this.getFormationsByDate();
   },
 }
 </script>

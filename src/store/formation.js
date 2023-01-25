@@ -24,6 +24,7 @@ export default {
     formationTypes: [],
     storeList: [],
     formationDates : [],
+    formationDatesTakenPlacesCount : []
   },
   mutations: {
     CHANGE_STATUS(state, payload) {
@@ -47,6 +48,9 @@ export default {
     SET_FORMATION_DATES(state, payload) {
       return state.formationDates = payload.formationDates;
     },
+    SET_FORMATION_DATES_TAKEN_PLACES_COUNT(state, payload) {
+      return state.formationDatesTakenPlacesCount = payload.formationDatesTakenPlacesCount
+    }
   },
   actions: {
     getDurationRules(context) {
@@ -84,8 +88,31 @@ export default {
         view: "Grid view"
       }).eachPage((records) => {
         
-        const formatRecords = records.map(record => (record.fields["Date"]));
-        context.commit('SET_FORMATION_DATES', { formationDates: formatRecords });        
+        context.commit('SET_FORMATION_DATES', { formationDates: records });        
+
+      }, (err) => {
+        if (err) {
+          console.error(err);
+          context.commit('CHANGE_STATUS', { status: 'error' });
+          context.commit('SET_ERROR_MESSAGE', { error: err });
+          return; 
+        }
+      });
+    },
+    getFormationsByDate(context) {
+      base('Formations').select({
+        view: "Formation par date de début"
+      }).eachPage((records) => {
+        let groupedDatas = {}
+        records.forEach(element => {
+          if(groupedDatas[element.fields['Date début formation en magasin']]) {
+            return groupedDatas[element.fields['Date début formation en magasin']] += 1
+          } else {
+            return groupedDatas[element.fields['Date début formation en magasin']] = 1
+          }
+        }); 
+
+        context.commit('SET_FORMATION_DATES_TAKEN_PLACES_COUNT', { formationDatesTakenPlacesCount: groupedDatas });        
 
       }, (err) => {
         if (err) {

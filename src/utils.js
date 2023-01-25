@@ -26,7 +26,6 @@ export function getWeekNumber( d ) {
 
 }
 
-
 export function getAmountOfDays( formationDuration ) {
     let amountOfDays = formationDuration * 7;
     if(formationDuration % 2) {
