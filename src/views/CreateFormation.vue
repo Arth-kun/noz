@@ -43,11 +43,6 @@
         />
         <label for="firstBeginDate">Date de début</label>
       </span>
-      <!-- Checkbox : Si la formation est dans le même magasin ou non -->
-      <div class="field-checkbox same-checkbox" v-if="firstBeginDate !== '' && duration !== 0">
-        <Checkbox v-model="sameStore" :binary="true" inputId="sameStore" />
-        <label for="sameStore">Je souhaite faire cette formation dans le même magasin</label>
-      </div>
       <!-- Carte du premier magasin -->
       <div class="first-store card" v-if="firstBeginDate !== '' && duration !== 0">
         <span class="store-title">
@@ -79,6 +74,11 @@
           <label for="firstNeedHotel">Besoin d'un hôtel ?</label>
         </span>
       </div>
+      <!-- Checkbox : Si la formation est dans le même magasin ou non -->
+      <div class="field-checkbox same-checkbox" v-if="firstBeginDate !== '' && duration !== 0">
+        <Checkbox v-model="sameStore" :binary="true" inputId="sameStore" />
+        <label for="sameStore">Je souhaite faire cette formation dans le même magasin</label>
+      </div>
       <!-- Carte du second magasin -->
       <div class="second-store card" v-if="secondStoreDuration > 0">
         <span class="store-title">
@@ -107,7 +107,7 @@
         </span>
       </div>
       <div class="centered">
-        <Button 
+        <Button
           label="Envoyer"
           class="p-button-rounded p-button-lg"
           :disabled="!canSaveFormation" 
@@ -126,14 +126,13 @@
             firstNeedHotel,
             secondNeedHotel,
             firstStoreDuration,
-            // isFormationInTwoPart,
-            // firstStoreSecondDuration,
             secondStoreDuration,
-            duration,
-            // secondDuration,
+            duration
           })"
-        />
-        <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
+        >
+          <span style="font-weight: bold;">Envoyer</span>
+          <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem" v-if="status === 'sending'"></i>
+        </Button>
       </div>
       <Message v-if="status === 'error'" severity='error' :closable="false">
         Une erreur est survenue, merci de de remonter ce problème s'il persiste :
@@ -147,7 +146,8 @@
       Vous avez créé une demande de formation avec succès !
     </Message>
     <Button 
-      label="Faire une nouvelle demande" 
+      label="Faire une nouvelle demande"
+      class="p-button-rounded p-button-lg"
       @click="returnHome"
     />
   </div>
@@ -303,11 +303,15 @@ export default {
         return !isOut;
 
       }).map(filteredStore => (
-        { value: filteredStore.id, label: `${filteredStore.fields["Nom du magasin"]} (${filteredStore.fields["Ordre de priorité"]})`, priority: filteredStore.fields["Ordre de priorité"]}
+        { 
+          value: filteredStore.id,
+          label: `${filteredStore.fields["Nom du magasin"]} (${filteredStore.fields["Ordre de priorité"] ?? 'non défini' })`,
+          priority: filteredStore.fields["Ordre de priorité"]
+        }
       )).sort((a, b) =>
         {
-          const aPrio = a.priority ? a.priority : 9999;
-          const bPrio = b.priority ? b.priority : 9999;
+          const aPrio = a.priority ?? 9999;
+          const bPrio = b.priority ?? 9999;
           return aPrio - bPrio;
         }
       );
@@ -396,7 +400,6 @@ export default {
         // Affichage uniquement des jobs possible restant
         this.jobs = this.filteredRules.map(rule => rule.fields['Poste visé']);
         this.targetJob = '';
-        // this.duration = 0; // refacto duration
       } 
       
       if(this.filteredRules.length === 1) {
@@ -445,9 +448,8 @@ export default {
       this.secondBeginDate = this.secondEndDate.addDays(-amountOfDaysTwo);
 
       // Refiltrer les magasins et afficher uniquement les magasins qui correspondent
-      const twoStores = this.firstStoreDuration < this.duration
-      this.filterStore("first", twoStores);
-      this.filterStore("second", twoStores);
+      this.filterStore("first", !this.sameStore);
+      this.filterStore("second", !this.sameStore);
     },
     duration(value) {
       this.firstStoreDuration = value;
@@ -462,9 +464,8 @@ export default {
       }
 
       if(this.firstBeginDate) {
-        const twoStores = value < this.duration
-        this.filterStore("first", twoStores);
-        this.filterStore("second", twoStores);
+        this.filterStore("first", !this.sameStore);
+        this.filterStore("second", !this.sameStore);
       }
     },
   },

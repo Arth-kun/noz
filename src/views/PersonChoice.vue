@@ -37,13 +37,15 @@
         <label for="job">Fonction actuelle</label>
       </span>
       <div class="centered">
-        <Button 
+        <Button
           label="Suivant" 
           class="p-button-rounded p-button-lg"
           :disabled="!canSavePerson" 
           @click="createPerson({ firstname, lastname, zone, society, job, xp, contract })"
-        />
-        <i class="pi pi-spin pi-spinner" style="fontSize: 2rem" v-if="status === 'sending'"></i>
+        >
+          <span style="font-weight: bold;">Suivant</span>
+          <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem" v-if="status === 'sending'"></i>
+        </Button>
       </div>
       <Message v-if="status === 'error'" severity='error' :closable="false">
         Une erreur est survenue, merci de de remonter ce problème s'il persiste :

@@ -150,12 +150,14 @@ export default {
 
           if(index === 0) {
             weekBeginDate = beginDate;
-          } else if ((index + 1) % 2) {
-            // Si c'est impaire
+          } else if (new Date(weeks[index -1].weekBeginDate).getDay() == 1 ) {
+            // Si le premier de la semaine précédente est un lundi
+            // alors on fait commencer la semaine un mardi
             const lastWeekEndDate = weeks[index - 1].weekEndDate;
             weekBeginDate = new Date(lastWeekEndDate).addDays(4);
-          } else {
-            // Si c'est paire
+          } else if (new Date(weeks[index -1].weekBeginDate).getDay() == 2) {
+            // Si le premier de la semaine précédente est un mardi
+            // alors on fait commencer la semaine un lundi
             const lastWeekEndDate = weeks[index - 1].weekEndDate;
             weekBeginDate = new Date(lastWeekEndDate).addDays(2);
           }
