@@ -34,13 +34,20 @@
       <span class="p-float-label">
         <Calendar 
           id="firstBeginDate" 
+          v-on:show="calendarShow"
+          v-on:month-change="calendarMonthChange"
           v-model="firstBeginDate" 
           :disabledDates="invalidDates"
           :disabledDays="invalidDays"
           :minDate="new Date()"
           :disabled="duration === 0"
           dateFormat="dd/mm/yy"
-        />
+        >
+          <template #footer>
+            <p style="margin-left: 10px;" v-if="placeCount > 0">Il reste {{ placeCount }} place(s) libre(s) ce mois-ci.</p>
+            <p style="margin-left: 10px;" v-else>Il ne reste aucune place libre ce mois-ci.</p>
+          </template>
+        </Calendar>
         <label for="firstBeginDate">Date de début</label>
       </span>
       <!-- Carte du premier magasin -->
@@ -188,9 +195,36 @@ export default {
       filteredRules: [],
       storeOptions: { first: [], second: []},
       duration: 4,
+      placeCount: 0,
     }
   },
   methods: {
+    getPlaceCount(date) {
+      // We get back the formation line corresponding to with calendar chosen month/year
+      let dates = this.formationDates.filter(element => {
+        if(element.fields['Date'] && element.fields['Nombre de stagiaire max'] && element.fields['Date'].indexOf(date) > -1) {
+          return true;
+        }
+      });
+      // If there is at least one result
+      if(dates.length > 0){
+        // We get back the alreday taken places count
+        const takenPlacesCount = this.formationDatesTakenPlacesCount[dates[0].fields['Date']]
+        // if some places are already taken, we put in this.placeCount maximum capacity minus taken count
+        // else maximum capacity
+        this.placeCount = takenPlacesCount ? parseInt(dates[0].fields['Nombre de stagiaire max']) - takenPlacesCount : dates[0].fields['Nombre de stagiaire max']
+      } else {
+        // if there is no date result or several, we put in this.placeCount zero value
+        this.placeCount = 0
+      }
+    },
+    calendarShow() {
+      let today = new Date()
+      this.getPlaceCount(`${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`)
+    },
+    calendarMonthChange(event) {
+      this.getPlaceCount(`${event.year}-${event.month.toString().padStart(2, '0')}`)
+    },
     initInvalidDate() {
       // v2 for the update of 2023 jan
       // Need to check on each day, is it a day that is in the database, 
