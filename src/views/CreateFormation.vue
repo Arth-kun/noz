@@ -349,7 +349,7 @@ export default {
             zone: itemZone,
             label: `${filteredStore.fields["Nom du magasin"]} 
             (prio : ${filteredStore.fields["Ordre de priorité"] ?? 'non défini' }) 
-            (zone : ${itemZone.label.substring(0, 2)})`,
+            (zone : ${itemZone.label})`,
             priority: filteredStore.fields["Ordre de priorité"]
           }
         }
