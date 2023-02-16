@@ -256,13 +256,8 @@ export default {
       });
     },
     filterStore(storeIndex, twoStores) {
+      const chosenCities = []
       this.storeOptions[storeIndex] = this.storeList.filter(store => {
-        // Si la zone du magasin n'est pas celle de la personne concernée
-        // alors on enlève le magasin de la liste des choix
-        if(store.fields['Zone'].indexOf(this.zone) == -1) {
-          return false;
-        }
-
         // Check pour chaque début et fin d'absence ou de formation prévu si les dates sont dans l'interval ou non
         // => Mettre dans une fonction
         let isOut = false;
@@ -346,19 +341,40 @@ export default {
 
         return !isOut;
 
-      }).map(filteredStore => (
-        { 
-          value: filteredStore.id,
-          label: `${filteredStore.fields["Nom du magasin"]} (${filteredStore.fields["Ordre de priorité"] ?? 'non défini' })`,
-          priority: filteredStore.fields["Ordre de priorité"]
-        }
-      )).sort((a, b) =>
+      }).map(filteredStore => 
         {
+          const itemZone = this.zones.find(zone => { return zone.value === filteredStore.fields["Zone"][0] })
+          return { 
+            value: filteredStore.id,
+            zone: itemZone,
+            label: `${filteredStore.fields["Nom du magasin"]} 
+            (prio : ${filteredStore.fields["Ordre de priorité"] ?? 'non défini' }) 
+            (zone : ${itemZone.label})`,
+            priority: filteredStore.fields["Ordre de priorité"]
+          }
+        }
+      ).sort((a, b) =>
+        {
+          const aZone = a.zone.label;
+          const bZone = b.zone.label;
           const aPrio = a.priority ?? 9999;
           const bPrio = b.priority ?? 9999;
-          return aPrio - bPrio;
+          return aZone.localeCompare(bZone) || aPrio - bPrio;
         }
-      );
+      ).filter(store => {
+        if(store.zone.value == this.zone){
+          chosenCities.push(store);
+          return false;
+        } else {
+          return true;
+        }
+      });
+
+      // Put chosen zone's cities on top of the list
+      chosenCities.forEach((element, index) => {
+        this.storeOptions[storeIndex].splice(index, 0, element)
+      })
+
       // Populate the dropdowns with a default value
       if(this.storeOptions["first"].length > 0 && storeIndex == "first"){
         this.firstStore = this.storeOptions["first"][0]['value']
@@ -424,7 +440,7 @@ export default {
         )
       );
     },
-    ...mapState('person', ['job', 'xp', 'recordId', 'zone']),
+    ...mapState('person', ['job', 'xp', 'recordId', 'zone', 'zones']),
     ...mapState('formation', ['storeList', 'formationDates', 'formationTypes', 'startingRules', 'status', 'error', 'formationDatesTakenPlacesCount'])
   },
   watch: {
@@ -500,7 +516,7 @@ export default {
     },
     firstStoreDuration(value, pastValue) {
       this.secondStoreDuration = this.duration - value;
-      // Si on a plus de semaine sur le premier magasin => On doit recheck si ce magasin est bien dispo, same pour le deuxième
+      // Si on n'a plus de semaines sur le premier magasin => On doit recheck si ce magasin est bien dispo, same pour le deuxième
       if(pastValue > value) {
         this.secondStore = '';
       } else {
