@@ -24,6 +24,7 @@ export default {
     formationTypes: [],
     storeList: [],
     formationDates : [],
+    nbSemaineformationPrestataire : 0,
     formationDatesTakenPlacesCount : []
   },
   mutations: {
@@ -50,7 +51,10 @@ export default {
     },
     SET_FORMATION_DATES_TAKEN_PLACES_COUNT(state, payload) {
       return state.formationDatesTakenPlacesCount = payload.formationDatesTakenPlacesCount
-    }
+    },
+    SET_NB_SEMAINE_FORMATION_PRESTATAIRE(state, payload) {
+      return state.nbSemaineformationPrestataire = payload.nbSemaineformationPrestataire;
+    }    
   },
   actions: {
     getDurationRules(context) {
@@ -113,6 +117,22 @@ export default {
         }); 
 
         context.commit('SET_FORMATION_DATES_TAKEN_PLACES_COUNT', { formationDatesTakenPlacesCount: groupedDatas });        
+
+      }, (err) => {
+        if (err) {
+          console.error(err);
+          context.commit('CHANGE_STATUS', { status: 'error' });
+          context.commit('SET_ERROR_MESSAGE', { error: err });
+          return; 
+        }
+      });
+    },
+    getNbSemaineFormationPrestataire(context) {
+      base('Semaines formation préstataire').select({
+        view: "Grid view"
+      }).eachPage((records) => {
+        
+        context.commit('SET_NB_SEMAINE_FORMATION_PRESTATAIRE', { nbSemaineformationPrestataire: records[0].fields["Nombre de semaines"] });        
 
       }, (err) => {
         if (err) {

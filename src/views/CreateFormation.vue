@@ -28,7 +28,7 @@
       </span>
       <!-- Info : durée de la formation -->
       <div class="duration">
-        {{ `Durée de la formation : ${duration === 0 ? '?' : duration} semaines`}}
+        {{ `Temps passé en magasin parrain : ${duration === 0 ? '?' : duration} semaines`}}
       </div>
       <!-- Calendrier de la date de début -->
       <span class="p-float-label">
@@ -36,7 +36,7 @@
           id="firstBeginDate" 
           v-on:show="calendarShow"
           v-on:month-change="calendarMonthChange"
-          v-model="firstBeginDate" 
+          v-model="globalBeginDate" 
           :disabledDates="invalidDates"
           :disabledDays="invalidDays"
           :minDate="new Date()"
@@ -51,13 +51,13 @@
         <label for="firstBeginDate">Date de début</label>
       </span>
       <!-- Carte du premier magasin -->
-      <div class="first-store card" v-if="firstBeginDate !== '' && duration !== 0">
+      <div class="first-store card" v-if="globalBeginDate !== '' && duration !== 0">
         <span class="store-title">
           {{`Choix du ${!sameStore ? 'premier' : ''} magasin parrain :`}}
         </span>
         <!-- Affichage de la durée -->
         <div class="weeks-container">
-          <span v-if="sameStore">{{ `2 x 2 semaines entrecoupées de ${this.gapWeek} semaines de pause` }}</span>
+          <span v-if="sameStore">{{ `2 semaines du ${firstBeginDate.toLocaleDateString()} au ${firstEndDate.toLocaleDateString()} et 2 semaines du ${secondBeginDate.toLocaleDateString()} au ${secondEndDate.toLocaleDateString()}` }}</span>
           <span v-else>{{ `2 semaines du ${firstBeginDate.toLocaleDateString()} au ${firstEndDate.toLocaleDateString()}` }}</span>
         </div>
         <!-- Choix du magasin parrain -->
@@ -84,7 +84,7 @@
       <!-- Checkbox : Si la formation est dans le même magasin ou non -->
       <div class="field-checkbox same-checkbox" v-if="firstBeginDate !== '' && duration !== 0">
         <Checkbox v-model="sameStore" :binary="true" inputId="sameStore" />
-        <label for="sameStore">Je souhaite faire cette formation dans le même magasin</label>
+        <label for="sameStore">Je souhaite faire les deux périodes dans le même magasin</label>
       </div>
       <!-- Carte du second magasin -->
       <div class="second-store card" v-if="secondStoreDuration > 0">
@@ -122,7 +122,7 @@
             recordId,
             job,
             formationType, 
-            targetJob, 
+            targetJob,
             firstBeginDate,
             firstEndDate,
             secondBeginDate,
@@ -179,6 +179,7 @@ export default {
 
       formationType: '',
       targetJob: '',
+      globalBeginDate: '',
       firstBeginDate: '',
       firstEndDate: '',
       secondBeginDate: '',
@@ -240,7 +241,7 @@ export default {
           // c'es-à-dire un jour de plus que les dates de la BDD,
           // donc je pense effectivement que c'est un problème de time zone...
           // Je laisse les 2 lignes pour que l'on puisse tester tous les deux à tour de rôle :)
-          // this.invalidDates.push(date.addDays(1));
+          //this.invalidDates.push(date.addDays(1));
           this.invalidDates.push(date);
         }
       }
@@ -390,9 +391,12 @@ export default {
     },
     filterDateCanceled(status, dates) {
       // Return dates that doesn't have a "Désistement" status
-      const filteredDates = dates.filter((_, i) => status[i] !== "Désistement");
+      if(status) {
+        const filteredDates = dates.filter((_, i) => status[i] !== "Désistement");
 
-      return filteredDates;
+        return filteredDates;
+      }
+      return dates;
     },
     checkDatesMatches(datesArray, beginDate, endDate, maxCapacity = null) {
       // Fonction pour vérifier si une date est dedans pour les dispos magasins
@@ -441,7 +445,7 @@ export default {
       );
     },
     ...mapState('person', ['job', 'xp', 'recordId', 'zone', 'zones']),
-    ...mapState('formation', ['storeList', 'formationDates', 'formationTypes', 'startingRules', 'status', 'error', 'formationDatesTakenPlacesCount'])
+    ...mapState('formation', ['storeList', 'formationDates', 'nbSemaineformationPrestataire', 'formationTypes', 'startingRules', 'status', 'error', 'formationDatesTakenPlacesCount'])
   },
   watch: {
     sameStore(value) {
@@ -482,12 +486,16 @@ export default {
         this.initInvalidDate(tuesdayRule);
       }
     },
-    firstBeginDate(value) {
+    globalBeginDate(value) {
+      // Ajout de la global begin date, qui ne doit pas être la même que la first begin Date
+      // Potentiellement passer le watch sur la global, puis calcul de la first begin date en plus
+      this.firstBeginDate = value.addDays(this.nbSemaineformationPrestataire * 7 + 1);
+
       // Calcul de la date de fin en comptant la pause
       const globalDuration = this.duration + this.gapWeek;
       let globalAmountOfDays = getAmountOfDays(globalDuration);
 
-      this.secondEndDate = value.addDays(globalAmountOfDays);
+      this.secondEndDate = this.firstBeginDate.addDays(globalAmountOfDays);
 
       // Calcul des 2 paires de dates de début et fin
       // La formation est tjs de 2 * 2 semaines
@@ -578,6 +586,7 @@ export default {
 }
 .weeks-container {
   margin-bottom: 20px;
+  padding-bottom: 20px;
   font-style: italic;
 }
 </style>
