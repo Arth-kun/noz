@@ -192,7 +192,7 @@ export default {
       secondStoreDuration: 0,
       
       invalidDates: [new Date()],
-      invalidDays: [0, 1, 3, 4, 5, 6],
+      invalidDays: [],
       filteredRules: [],
       storeOptions: { first: [], second: []},
       duration: 4,
@@ -466,12 +466,14 @@ export default {
         this.targetJob = '';
       } 
       
-      if(this.filteredRules.length === 1) {
-        // Récupération de la règle des mardis (paire, impaire ou les deux)
-        // + Relance de l'init des jours
-        const tuesdayRule = this.filteredRules[0].fields['Mardi début de formation'];
-        this.initInvalidDate(tuesdayRule);
-      }
+      // Originally was meant to block the formation to tuesdays only
+
+      // if(this.filteredRules.length === 1) {
+      //   // Récupération de la règle des mardis (paire, impaire ou les deux)
+      //   // + Relance de l'init des jours
+      //   const tuesdayRule = this.filteredRules[0].fields['Mardi début de formation'];
+      //   this.initInvalidDate(tuesdayRule);
+      // }
     },
     targetJob(value) {
       // Se trigger que sur un mercato => On met juste la durée à jour direct
