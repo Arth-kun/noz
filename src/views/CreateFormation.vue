@@ -43,10 +43,10 @@
           :disabled="duration === 0"
           dateFormat="dd/mm/yy"
         >
-          <template #footer>
+          <!--<template #footer>
             <p style="margin-left: 10px;" v-if="placeCount > 0">Il reste {{ placeCount }} place(s) libre(s) ce mois-ci.</p>
             <p style="margin-left: 10px;" v-else>Il ne reste aucune place libre ce mois-ci.</p>
-          </template>
+          </template>-->
         </Calendar>
         <label for="firstBeginDate">Date de début</label>
       </span>
@@ -249,7 +249,12 @@ export default {
       // For all formation dates
       this.formationDates.forEach(element => {
         // Get back already taken places count with the date
-        const takenPlacesCount = this.formationDatesTakenPlacesCount[element.fields['Date']]
+        const storeFormationDate = new Date(element.fields['Date']).addDays(this.nbSemaineformationPrestataire * 7 + 1).toISOString().replace('T00:00:00.000Z', '');
+        const takenPlacesCount = this.formationDatesTakenPlacesCount[storeFormationDate];
+
+        /*console.log('array formation taken places count', this.formationDatesTakenPlacesCount);
+        console.log('date formation', storeFormationDate);
+        console.log('taken place count', takenPlacesCount);*/
         // Invalid date if max capacity is smaller or equal to taken places count or if max capacity is null
         if((takenPlacesCount && element.fields['Nombre de stagiaire max'] <= takenPlacesCount) || element.fields['Nombre de stagiaire max'] == 0) {
           this.invalidDates.push(new Date(element.fields['Date']));
