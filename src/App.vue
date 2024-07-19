@@ -16,16 +16,29 @@ body, html {
 
 .layout {
   width: 100%;
+  height: 70%;
   min-height: 40%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  padding: 50px 0 100px 0;
 }
 
 .col {
   width: 25vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 30px;
+}
+
+.col * {
+  width: 100%;
+}
+
+.store-choice {
+  margin-top: 30px;
 }
 
 @media (max-width: 499px) {

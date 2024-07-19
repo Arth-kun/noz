@@ -1,13 +1,15 @@
 import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
-import Dropdown from 'primevue/dropdown';
+import Aura from '@primevue/themes/aura';
+import Select from 'primevue/select';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import InputNumber from 'primevue/inputnumber';
-import Calendar from 'primevue/calendar';
+import DatePicker from 'primevue/datepicker';
 import Tooltip from 'primevue/tooltip';
 import Checkbox from 'primevue/checkbox';
+import FloatLabel from 'primevue/floatlabel';
 
 import App from './App.vue';
 import router from './router';
@@ -17,6 +19,14 @@ createApp(App)
   .use(store)
   .use(router)
   .use(PrimeVue, {
+    theme: {
+      preset: Aura,
+      options: {
+          prefix: 'p',
+          darkModeSelector: '.dark-mode-class',
+          cssLayer: false
+      },
+    },
     locale: {
       dayNames: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
       dayNamesShort: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
@@ -27,13 +37,14 @@ createApp(App)
     }
   })
   .directive('tooltip', Tooltip)
-  .component('Dropdown', Dropdown)
+  .component('Dropdown', Select)
   .component('Button', Button)
   .component('InputText', InputText)
   .component('InputNumber', InputNumber)
   .component('Message', Message)
-  .component('Calendar', Calendar)
+  .component('Calendar', DatePicker)
   .component('Checkbox', Checkbox)
+  .component('FloatLabel', FloatLabel)
   .mount('#app');
 
 Date.prototype.addDays = function(days) {

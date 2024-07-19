@@ -2,15 +2,15 @@
   <Header />
   <div class="layout" v-if="recordId === null">
     <div class="col">
-      <span class="p-float-label">
+      <FloatLabel>
         <InputText id="lastname" type="text" v-model.trim="lastname" />
         <label for="lastname">Nom</label>
-      </span>
-      <span class="p-float-label">
+      </FloatLabel>
+      <FloatLabel>
         <InputText id="firstname" type="text" v-model.trim="firstname" />
         <label for="firstname">Prénom</label>
-      </span>
-      <span class="p-float-label">
+      </FloatLabel>
+      <FloatLabel>
         <Dropdown 
           id="zone" 
           v-model="zone" 
@@ -19,23 +19,23 @@
           optionValue="value"
         />
         <label for="zone">Zone</label>
-      </span>
-      <span class="p-float-label">
+      </FloatLabel>
+      <FloatLabel>
         <Dropdown id="xp" v-model="xp" :options="xps" />
         <label for="xp">Expérience de plus de 2 ans chez Noz ?</label>
-      </span>
-      <span class="p-float-label">
+      </FloatLabel>
+      <FloatLabel>
         <Dropdown id="contract" v-model="contract" :options="contracts" />
         <label for="contract">Type de contrat actuel</label>
-      </span>
-      <span class="p-float-label">
+      </FloatLabel>
+      <FloatLabel>
         <Dropdown id="society" v-model="society" :options="societies" />
         <label for="society">Société d'appartenance</label>
-      </span>
-      <span class="p-float-label">
+      </FloatLabel>
+      <FloatLabel>
         <Dropdown id="job" v-model="job" :options="jobs" />
         <label for="job">Fonction actuelle</label>
-      </span>
+      </FloatLabel>
       <div class="centered">
         <Button
           label="Suivant" 

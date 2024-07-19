@@ -4,34 +4,34 @@
     <div class="col">
       <!-- Choix de la formation -->
       <div class="formation-type-container">
-        <span class="p-float-label no-margin-bottom">
+        <FloatLabel class="no-margin-bottom">
           <Dropdown 
             id="formationType" 
             v-model="formationType" 
             :options="formationTypes"
           />
           <label for="formationType">Type de formation</label>
-        </span>
+        </FloatLabel>
         <div class="only-type" v-if="formationTypes.length === 1">
           <i class="pi pi-exclamation-triangle" style="margin-right: 5px;"></i>
           <span>Vous ne pouvez choisir que le type "{{formationType}}"</span>
         </div>
       </div>
       <!-- Poste visé si Mercato-->
-      <span class="p-float-label" v-if="formationType === 'Mercato'">
+      <FloatLabel v-if="formationType === 'Mercato'">
         <Dropdown 
           id="targetJob" 
           v-model="targetJob" 
           :options="jobs"
         />
         <label for="targetJob">Poste visé</label>
-      </span>
+      </FloatLabel>
       <!-- Info : durée de la formation -->
       <div class="duration">
         {{ `Temps passé en magasin parrain : ${duration === 0 ? '?' : duration} semaines`}}
       </div>
       <!-- Calendrier de la date de début -->
-      <span class="p-float-label">
+      <FloatLabel>
         <Calendar 
           id="firstBeginDate" 
           v-on:show="calendarShow"
@@ -49,7 +49,7 @@
           </template>-->
         </Calendar>
         <label for="firstBeginDate">Date de début</label>
-      </span>
+      </FloatLabel>
       <!-- Carte du premier magasin -->
       <div class="first-store card" v-if="globalBeginDate !== '' && duration !== 0">
         <span class="store-title">
@@ -61,7 +61,7 @@
           <span v-else>{{ `2 semaines du ${firstBeginDate.toLocaleDateString()} au ${firstEndDate.toLocaleDateString()}` }}</span>
         </div>
         <!-- Choix du magasin parrain -->
-        <span class="p-float-label">
+        <FloatLabel>
           <Dropdown 
             id="firstStore" 
             v-model="firstStore" 
@@ -70,16 +70,16 @@
             optionValue="value"
           />
           <label for="firstStore">Magasin parrain</label>
-        </span>
+        </FloatLabel>
         <!-- Checkbox du besoin d'hôtel -->
-        <span class="p-float-label">
+        <FloatLabel class="store-choice">
           <Dropdown 
             id="firstNeedHotel" 
             v-model="firstNeedHotel" 
             :options="yesNoOptions"
           />
           <label for="firstNeedHotel">Besoin d'un hôtel ?</label>
-        </span>
+        </FloatLabel>
       </div>
       <!-- Checkbox : Si la formation est dans le même magasin ou non -->
       <div class="field-checkbox same-checkbox" v-if="firstBeginDate !== '' && duration !== 0">
@@ -94,7 +94,7 @@
         <div class="weeks-container">
           <span>{{ `2 semaines du ${secondBeginDate.toLocaleDateString()} au ${secondEndDate.toLocaleDateString()}` }}</span>
         </div>
-        <span class="p-float-label">
+        <FloatLabel>
           <Dropdown 
             id="secondStore" 
             v-model="secondStore" 
@@ -103,15 +103,15 @@
             optionValue="value"
           />
           <label for="secondStore">Magasin parrain</label>
-        </span>
-        <span class="p-float-label">
+        </FloatLabel>
+        <FloatLabel>
           <Dropdown 
             id="secondNeedHotel" 
             v-model="secondNeedHotel" 
             :options="yesNoOptions"
           />
           <label for="secondNeedHotel">Besoin d'un hôtel ?</label>
-        </span>
+        </FloatLabel>
       </div>
       <div class="centered">
         <Button

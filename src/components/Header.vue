@@ -14,6 +14,6 @@
     padding-top: 50px;
   }
  img {
-    width: 20%;
+    width: 12%;
   }
 </style>
